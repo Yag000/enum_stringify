@@ -2,6 +2,7 @@
 name = "enum_string"
 version = "0.0.0"
 edition = "2021"
+description="Future set of macros to generate to string functions for enums"
 authors = ["Yago Iglesias Vazquez  <yago.iglesias.vazquez@gmail.com>"]
 readme = "README.md"
 license = "MIT OR Apache-2.0"
