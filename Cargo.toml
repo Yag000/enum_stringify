@@ -1,0 +1,15 @@
+[package]
+name = "enum_string"
+version = "0.0.0"
+edition = "2021"
+authors = ["Yago Iglesias Vazquez  <yago.iglesias.vazquez@gmail.com>"]
+readme = "README.md"
+edlicense = "MIT OR Apache-2.0"
+homepage = "https://github.com/Yag000/enum_string"
+repository = "https://github.com/Yag000/enum_string"
+documentation = "https://docs.rs/enum_string"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
