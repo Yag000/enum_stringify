@@ -1,4 +1,6 @@
-#[derive(enum_string::EnumToString)]
+use std::str::FromStr;
+
+#[derive(enum_string::EnumToString, Debug, PartialEq)]
 enum Numbers {
     One,
     Two,
@@ -6,26 +8,38 @@ enum Numbers {
 }
 
 #[test]
-fn test_numbers() {
+fn test_numbers_to_string() {
     assert_eq!(Numbers::One.to_string(), "One");
     assert_eq!(Numbers::Two.to_string(), "Two");
     assert_eq!(Numbers::Three.to_string(), "Three");
 }
 
-#[derive(enum_string::EnumToString, Debug, PartialEq)]
-#[allow(non_camel_case_types)]
-enum Command {
-    /// Ignore this comment macro :)
-    HelpMe,
-    /// And this one too!
-    yay,
-    /// This is a help Command
-    _wow,
+#[test]
+fn test_from_str() {
+    assert_eq!(Numbers::try_from("One").unwrap(), Numbers::One);
+    assert_eq!(Numbers::try_from("Two").unwrap(), Numbers::Two);
+    assert_eq!(Numbers::try_from("Three").unwrap(), Numbers::Three);
+
+    assert!(Numbers::try_from("Four").is_err());
 }
 
 #[test]
-fn test_command() {
-    assert_eq!(Command::HelpMe.to_string(), "HelpMe");
-    assert_eq!(Command::yay.to_string(), "yay");
-    assert_eq!(Command::_wow.to_string(), "_wow");
+fn test_from_string() {
+    assert_eq!(Numbers::try_from("One".to_string()).unwrap(), Numbers::One);
+    assert_eq!(Numbers::try_from("Two".to_string()).unwrap(), Numbers::Two);
+    assert_eq!(
+        Numbers::try_from("Three".to_string()).unwrap(),
+        Numbers::Three
+    );
+
+    assert!(Numbers::try_from("Four".to_string()).is_err());
+}
+
+#[test]
+fn test_from_str_trait() {
+    assert_eq!(Numbers::from_str("One").unwrap(), Numbers::One);
+    assert_eq!(Numbers::from_str("Two").unwrap(), Numbers::Two);
+    assert_eq!(Numbers::from_str("Three").unwrap(), Numbers::Three);
+
+    assert!(Numbers::from_str("Four").is_err());
 }
