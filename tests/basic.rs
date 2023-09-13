@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-#[derive(enum_string::EnumToString, Debug, PartialEq)]
+#[derive(enum_stringify::EnumStringify, Debug, PartialEq)]
 enum Numbers {
     One,
     Two,

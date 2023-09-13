@@ -14,10 +14,10 @@ use quote::quote;
 /// # Example
 ///
 /// ```
-/// use enum_string::EnumToString;
+/// use enum_stringify::EnumStringify;
 /// use std::str::FromStr;
 ///
-/// #[derive(EnumToString, Debug, PartialEq)]
+/// #[derive(EnumStringify, Debug, PartialEq)]
 /// enum Numbers {
 ///    One,
 ///    Two,
@@ -82,8 +82,8 @@ use quote::quote;
 /// ```
 ///
 ///
-#[proc_macro_derive(EnumToString)]
-pub fn enum_to_string(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(EnumStringify)]
+pub fn enum_stringify(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     impl_enum_to_string(&ast)
 }
