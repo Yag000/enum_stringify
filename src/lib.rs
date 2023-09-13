@@ -97,12 +97,12 @@ fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
 
     let names = variants.iter().map(|v| &v.ident).collect::<Vec<_>>();
 
-    let mut gen = impl_display(&name, &names);
-    gen.extend(impl_from_str(&name, &names));
-    gen.extend(impl_from_string(&name));
-    gen.extend(impl_from_str_trait(&name));
+    let mut gen = impl_display(name, &names);
+    gen.extend(impl_from_str(name, &names));
+    gen.extend(impl_from_string(name));
+    gen.extend(impl_from_str_trait(name));
 
-    gen.into()
+    gen
 }
 
 fn impl_display(name: &syn::Ident, names: &Vec<&syn::Ident>) -> TokenStream {
