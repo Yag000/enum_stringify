@@ -1,3 +1,8 @@
+//! # enum-stringify
+//!
+//! Derive [`std::fmt::Display`], [`std::str::FromStr`], [`TryFrom<&str>`] and
+//! [`TryFrom<String>`] with a simple derive macro: [`EnumStringify`].
+
 use std::{
     fmt::{Display, Formatter},
     str::FromStr,
@@ -80,8 +85,6 @@ use quote::quote;
 ///     }
 /// }
 /// ```
-///
-///
 #[proc_macro_derive(EnumStringify)]
 pub fn enum_stringify(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
@@ -105,6 +108,7 @@ fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
     gen
 }
 
+/// Implementation of [`std::fmt::Display`].
 fn impl_display(name: &syn::Ident, names: &Vec<&syn::Ident>) -> TokenStream {
     let gen = quote! {
         impl std::fmt::Display for #name {
@@ -119,6 +123,7 @@ fn impl_display(name: &syn::Ident, names: &Vec<&syn::Ident>) -> TokenStream {
     gen.into()
 }
 
+/// Implementation of [`TryFrom<&str>`].
 fn impl_from_str(name: &syn::Ident, names: &Vec<&syn::Ident>) -> TokenStream {
     let gen = quote! {
         impl TryFrom<&str> for #name {
@@ -136,6 +141,7 @@ fn impl_from_str(name: &syn::Ident, names: &Vec<&syn::Ident>) -> TokenStream {
     gen.into()
 }
 
+/// Implementation of [`TryFrom<String>`].
 fn impl_from_string(name: &syn::Ident) -> TokenStream {
     let gen = quote! {
         impl TryFrom<String> for #name {
@@ -150,6 +156,7 @@ fn impl_from_string(name: &syn::Ident) -> TokenStream {
     gen.into()
 }
 
+/// Implementation of [`std::str::FromStr`].
 fn impl_from_str_trait(name: &syn::Ident) -> TokenStream {
     let gen = quote! {
         impl std::str::FromStr for #name {
