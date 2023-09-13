@@ -1,20 +1,19 @@
 [package]
 name = "enum_stringify"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2021"
 description="Macro to generate string conversion functions for enums"
 authors = ["Yago Iglesias Vazquez  <yago.iglesias.vazquez@gmail.com>"]
 readme = "README.md"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/Yag000/enum_stringifier"
-repository = "https://github.com/Yag000/enum_stringifier"
-documentation = "https://docs.rs/enum_stringifier"
+homepage = "https://github.com/Yag000/enum_stringify"
+repository = "https://github.com/Yag000/enum_stringify"
+documentation = "https://docs.rs/enum_stringify"
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-src = "src/lib.rs"
 proc-macro = true
 
 [dependencies]
