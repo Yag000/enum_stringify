@@ -3,11 +3,6 @@
 //! Derive [`std::fmt::Display`], [`std::str::FromStr`], [`TryFrom<&str>`] and
 //! [`TryFrom<String>`] with a simple derive macro: [`EnumStringify`].
 
-use std::{
-    fmt::{Display, Formatter},
-    str::FromStr,
-};
-
 use proc_macro::TokenStream;
 use quote::quote;
 
