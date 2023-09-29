@@ -3,8 +3,12 @@
 //! Derive [`std::fmt::Display`], [`std::str::FromStr`], [`TryFrom<&str>`] and
 //! [`TryFrom<String>`] with a simple derive macro: [`EnumStringify`].
 
+use attributes::Attributes;
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::{parse_macro_input, DeriveInput};
+
+mod attributes;
 
 /// Derive [`std::fmt::Display`], [`std::str::FromStr`], [`TryFrom<&str>`] and
 /// [`TryFrom<String>`] for an enum.
@@ -80,23 +84,26 @@ use quote::quote;
 ///     }
 /// }
 /// ```
-#[proc_macro_derive(EnumStringify)]
+#[proc_macro_derive(EnumStringify, attributes(enum_stringify))]
 pub fn enum_stringify(input: TokenStream) -> TokenStream {
-    let ast = syn::parse(input).unwrap();
+    let ast = parse_macro_input!(input as DeriveInput);
+
     impl_enum_to_string(&ast)
 }
 
 fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
+    let attributes = Attributes::new(ast);
     let name = &ast.ident;
     let variants = match ast.data {
         syn::Data::Enum(ref e) => &e.variants,
         _ => panic!("EnumToString only works with Enums"),
     };
 
-    let names = variants.iter().map(|v| &v.ident).collect::<Vec<_>>();
+    let identifiers = variants.iter().map(|v| &v.ident).collect::<Vec<_>>();
+    let names = attributes.apply(&identifiers);
 
-    let mut gen = impl_display(name, &names);
-    gen.extend(impl_from_str(name, &names));
+    let mut gen = impl_display(name, &identifiers, &names);
+    gen.extend(impl_from_str(name, &identifiers, &names));
     gen.extend(impl_from_string(name));
     gen.extend(impl_from_str_trait(name));
 
@@ -104,12 +111,16 @@ fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
 }
 
 /// Implementation of [`std::fmt::Display`].
-fn impl_display(name: &syn::Ident, names: &Vec<&syn::Ident>) -> TokenStream {
+fn impl_display(
+    name: &syn::Ident,
+    identifiers: &Vec<&syn::Ident>,
+    names: &Vec<syn::Ident>,
+) -> TokenStream {
     let gen = quote! {
         impl std::fmt::Display for #name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
                 match self {
-                    #(Self::#names => write!(f, stringify!(#names))),*
+                    #(Self::#identifiers=> write!(f, stringify!(#names))),*
                 }
             }
         }
@@ -119,14 +130,18 @@ fn impl_display(name: &syn::Ident, names: &Vec<&syn::Ident>) -> TokenStream {
 }
 
 /// Implementation of [`TryFrom<&str>`].
-fn impl_from_str(name: &syn::Ident, names: &Vec<&syn::Ident>) -> TokenStream {
+fn impl_from_str(
+    name: &syn::Ident,
+    identifiers: &Vec<&syn::Ident>,
+    names: &Vec<syn::Ident>,
+) -> TokenStream {
     let gen = quote! {
         impl TryFrom<&str> for #name {
             type Error = ();
 
             fn try_from(s: &str) -> Result<Self, Self::Error> {
                 match s {
-                    #(stringify!(#names) => Ok(Self::#names),)*
+                    #(stringify!(#names) => Ok(Self::#identifiers),)*
                     _ => Err(()),
                 }
             }

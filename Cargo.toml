@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 homepage = "https://github.com/Yag000/enum_stringify"
 repository = "https://github.com/Yag000/enum_stringify"
 documentation = "https://docs.rs/enum_stringify"
+keywords = ["enum", "string", "derive", "macro"]
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
