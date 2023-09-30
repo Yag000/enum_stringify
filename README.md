@@ -26,6 +26,26 @@ fn main() {
 }
 ```
 
+### Custom string representation
+
+You can customize the string representation of the enum by adding rpefixes or/and suffixes to the
+variants.
+
+```rust
+use enum_stringify::EnumStringify;
+
+#[derive(EnumStringify)]
+#[enum_stringify(prefix = "MyPrefix", suffix = "MySuffix")]
+enum MyEnum {
+    Variant1,
+    Variant2,
+    Variant3,
+}
+```
+
+In this case the string representation of `MyEnum::Variant1` will be `MyPrefixVariant1MySuffix`(and
+so on for the other variants).
+
 ## Documentation and installation
 
 See [docs.rs](https://docs.rs/enum-stringify) for documentation.

@@ -37,6 +37,29 @@ mod attributes;
 /// assert!(Numbers::try_from("Three").is_err());
 /// ```
 ///
+/// # Prefix and suffix
+///
+/// You can add a prefix and/or a suffix to the string representation of the
+/// enum variants.
+///
+/// ```
+/// use enum_stringify::EnumStringify;
+/// use std::str::FromStr;
+///
+/// #[derive(EnumStringify, Debug, PartialEq)]
+/// #[enum_stringify(prefix = MyPrefix, suffix = MySuffix)]
+/// enum Numbers {
+///   One,
+///   Two,
+/// }
+///
+/// assert_eq!(Numbers::One.to_string(), "MyPrefixOneMySuffix");
+/// assert_eq!(Numbers::Two.to_string(), "MyPrefixTwoMySuffix");
+///
+/// assert_eq!(Numbers::try_from("MyPrefixOneMySuffix").unwrap(), Numbers::One);
+/// assert_eq!(Numbers::try_from("MyPrefixTwoMySuffix").unwrap(), Numbers::Two);
+/// ```
+///
 /// # Details
 ///
 /// The implementations of the above traits corresponds to this:
