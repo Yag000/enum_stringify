@@ -65,7 +65,7 @@ impl Attributes {
 
                         if let Some(comma_separator) = tokens.next() {
                             if comma_separator.to_string() != "," {
-                                panic!("Expected a comma separating the attributes");
+                                panic!("Expected a commaseparated attribute list");
                             }
                         }
                     }
