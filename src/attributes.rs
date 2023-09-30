@@ -32,43 +32,41 @@ impl Attributes {
                     .map(|s| s.ident.to_string())
                     .collect::<Vec<_>>();
 
-                if path != vec!["enum_stringify"] {
-                    panic!("Attribute not supported");
-                }
+                if path == vec!["enum_stringify"] {
+                    let mut tokens = list.tokens.clone().into_iter();
 
-                let mut tokens = list.tokens.clone().into_iter();
+                    while let Some(attribute_type) = tokens.next() {
+                        let attribute_type = attribute_type.to_string();
 
-                while let Some(attribute_type) = tokens.next() {
-                    let attribute_type = attribute_type.to_string();
-
-                    if tokens.next().expect("type must be specified").to_string() != "=" {
-                        panic!("too many arguments");
-                    }
-                    let value = tokens.next().expect("value must be specified").to_string();
-
-                    match attribute_type.as_str() {
-                        "case" => {
-                            let case = match value.as_str() {
-                                "camel" => Case::Camel,
-                                "snake" => Case::Snake,
-                                _ => Case::None,
-                            };
-                            new.case = Some(case);
+                        if tokens.next().expect("type must be specified").to_string() != "=" {
+                            panic!("too many arguments");
                         }
-                        "prefix" => {
-                            new.prefix = Some(value);
-                        }
-                        "suffix" => {
-                            new.suffix = Some(value);
-                        }
-                        _ => {
-                            panic!("Attribute not supported");
-                        }
-                    }
+                        let value = tokens.next().expect("value must be specified").to_string();
 
-                    if let Some(comma_separator) = tokens.next() {
-                        if comma_separator.to_string() != "," {
-                            panic!("Expected a comma separating the attributes");
+                        match attribute_type.as_str() {
+                            "case" => {
+                                let case = match value.as_str() {
+                                    "camel" => Case::Camel,
+                                    "snake" => Case::Snake,
+                                    _ => Case::None,
+                                };
+                                new.case = Some(case);
+                            }
+                            "prefix" => {
+                                new.prefix = Some(value);
+                            }
+                            "suffix" => {
+                                new.suffix = Some(value);
+                            }
+                            _ => {
+                                panic!("Attribute not supported");
+                            }
+                        }
+
+                        if let Some(comma_separator) = tokens.next() {
+                            if comma_separator.to_string() != "," {
+                                panic!("Expected a comma separating the attributes");
+                            }
                         }
                     }
                 }
