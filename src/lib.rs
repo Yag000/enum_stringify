@@ -117,13 +117,10 @@ pub fn enum_stringify(input: TokenStream) -> TokenStream {
 fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
     let attributes = Attributes::new(ast);
     let name = &ast.ident;
-    let variants = match ast.data {
-        syn::Data::Enum(ref e) => &e.variants,
-        _ => panic!("EnumToString only works with Enums"),
-    };
+    let coplues = attributes.apply();
 
-    let identifiers = variants.iter().map(|v| &v.ident).collect::<Vec<_>>();
-    let names = attributes.apply(&identifiers);
+    let identifiers: Vec<&syn::Ident> = coplues.iter().map(|(i, _)| i).collect();
+    let names: Vec<syn::Ident> = coplues.iter().map(|(_, n)| n.clone()).collect();
 
     let mut gen = impl_display(name, &identifiers, &names);
     gen.extend(impl_from_str(name, &identifiers, &names));
