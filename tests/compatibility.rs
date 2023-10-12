@@ -31,6 +31,8 @@ fn test_prefix_suffix_from_str() {
 #[enum_stringify(suffix = MySuffix, prefix = MyPrefix)]
 #[serde(rename_all = "snake_case")]
 enum MyEnum2 {
+    #[serde(rename = "MyPrefixAMySuffix")]
+    #[enum_stringify(rename = AA)]
     A,
     B,
     C,
@@ -38,14 +40,14 @@ enum MyEnum2 {
 
 #[test]
 fn test_suffix_prefix_to_string() {
-    assert_eq!(MyEnum2::A.to_string(), "MyPrefixAMySuffix");
+    assert_eq!(MyEnum2::A.to_string(), "AA");
     assert_eq!(MyEnum2::B.to_string(), "MyPrefixBMySuffix");
     assert_eq!(MyEnum2::C.to_string(), "MyPrefixCMySuffix");
 }
 
 #[test]
 fn test_suffix_prefix_from_str() {
-    assert_eq!(MyEnum2::from_str("MyPrefixAMySuffix"), Ok(MyEnum2::A));
+    assert_eq!(MyEnum2::from_str("AA"), Ok(MyEnum2::A));
     assert_eq!(MyEnum2::from_str("MyPrefixBMySuffix"), Ok(MyEnum2::B));
     assert_eq!(MyEnum2::from_str("MyPrefixCMySuffix"), Ok(MyEnum2::C));
 }
