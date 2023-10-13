@@ -3,6 +3,14 @@ use std::collections::HashMap;
 use proc_macro2::{Ident, TokenStream};
 use syn::{DeriveInput, Meta};
 
+fn parse_string(s: String) -> Result<String, ()> {
+    if s.starts_with('"') && s.ends_with('"') {
+        Ok(s[1..s.len() - 1].to_string())
+    } else {
+        Err(())
+    }
+}
+
 pub(crate) enum Case {
     Camel,
     Snake,
@@ -13,11 +21,7 @@ impl TryFrom<(String, String)> for Case {
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "case" {
-            Ok(match value.1.as_str() {
-                "camel" => Self::Camel,
-                "snake" => Self::Snake,
-                _ => Err(())?,
-            })
+            value.1.try_into()
         } else {
             Err(())
         }
@@ -29,8 +33,8 @@ impl TryFrom<String> for Case {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Ok(match value.as_str() {
-            "camel" => Self::Camel,
-            "snake" => Self::Snake,
+            "\"camel\"" => Self::Camel,
+            "\"snake\"" => Self::Snake,
             _ => Err(())?,
         })
     }
@@ -49,14 +53,14 @@ impl TryFrom<(String, String)> for Rename {
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "prefix" {
             Ok(Self {
-                prefix: Some(value.1),
+                prefix: Some(parse_string(value.1)?),
                 suffix: None,
                 case: None,
             })
         } else if value.0 == "suffix" {
             Ok(Self {
                 prefix: None,
-                suffix: Some(value.1),
+                suffix: Some(parse_string(value.1)?),
                 case: None,
             })
         } else if value.0 == "case" {
@@ -124,7 +128,7 @@ impl TryFrom<(String, String)> for VariantRename {
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "rename" {
-            Ok(Self(value.1))
+            Ok(Self(parse_string(value.1)?))
         } else {
             Err(())
         }

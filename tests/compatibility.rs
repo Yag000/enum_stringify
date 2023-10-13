@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq, enum_stringify::EnumStringify, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
-#[enum_stringify(prefix = MyPrefix, suffix = MySuffix)]
+#[enum_stringify(prefix = "MyPrefix", suffix = "MySuffix")]
 enum MyEnum {
     A,
     B,
@@ -28,11 +28,11 @@ fn test_prefix_suffix_from_str() {
 // Testing commutativity with other attribute macros
 
 #[derive(Debug, PartialEq, Eq, enum_stringify::EnumStringify, serde::Serialize)]
-#[enum_stringify(suffix = MySuffix, prefix = MyPrefix)]
+#[enum_stringify(suffix = "MySuffix", prefix = "MyPrefix")]
 #[serde(rename_all = "snake_case")]
 enum MyEnum2 {
     #[serde(rename = "MyPrefixAMySuffix")]
-    #[enum_stringify(rename = AA)]
+    #[enum_stringify(rename = "AA")]
     A,
     B,
     C,

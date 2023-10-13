@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 #[derive(PartialEq, Debug, enum_stringify::EnumStringify)]
 enum Ainur {
-    #[enum_stringify(rename = Gods)]
+    #[enum_stringify(rename = "Gods")]
     Valar,
     Maiar,
 }
@@ -21,9 +21,9 @@ fn test_simple_rename_from_str() {
 
 #[derive(PartialEq, Debug, enum_stringify::EnumStringify)]
 enum Ainur2 {
-    #[enum_stringify(rename = Gods)]
+    #[enum_stringify(rename = "Gods")]
     Valar,
-    #[enum_stringify(rename = Raiam)]
+    #[enum_stringify(rename = "Raiam")]
     Maiar,
 }
 
@@ -41,10 +41,10 @@ fn test_simple_rename_from_str2() {
 
 #[derive(PartialEq, Debug, enum_stringify::EnumStringify)]
 enum DoubleAniurRename {
-    #[enum_stringify(rename = Gods)]
-    #[enum_stringify(rename = Valar)]
+    #[enum_stringify(rename = "Gods")]
+    #[enum_stringify(rename = "Valar")]
     Valar,
-    #[enum_stringify(rename = Raiam)]
+    #[enum_stringify(rename = "Raiam")]
     Maiar,
 }
 

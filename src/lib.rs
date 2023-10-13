@@ -47,7 +47,7 @@ mod attributes;
 /// use std::str::FromStr;
 ///
 /// #[derive(EnumStringify, Debug, PartialEq)]
-/// #[enum_stringify(prefix = MyPrefix, suffix = MySuffix)]
+/// #[enum_stringify(prefix = "MyPrefix", suffix = "MySuffix")]
 /// enum Numbers {
 ///   One,
 ///   Two,
@@ -72,7 +72,7 @@ mod attributes;
 ///
 /// #[derive(EnumStringify, Debug, PartialEq)]
 /// enum Istari {
-///  #[enum_stringify(rename = Ólorin)]
+///  #[enum_stringify(rename = "Ólorin")]
 ///  Gandalf,
 ///  Saruman,
 ///  Radagast,
