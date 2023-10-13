@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
-#[enum_stringify(suffix = Suff)]
+#[enum_stringify(suffix = "Suff")]
 enum Number1 {
     Zero,
     One,
@@ -22,7 +22,7 @@ fn test_suffix_from_str() {
 }
 
 #[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
-#[enum_stringify(prefix = Pref)]
+#[enum_stringify(prefix = "Pref")]
 enum Number2 {
     Zero,
     One,
@@ -44,7 +44,7 @@ fn test_prefix_from_str() {
 }
 
 #[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
-#[enum_stringify(prefix = Pref, suffix = Suff)]
+#[enum_stringify(prefix = "Pref", suffix = "Suff")]
 enum Number3 {
     Zero,
     One,
@@ -68,7 +68,7 @@ fn test_prefix_suffix_from_str() {
 // Testing commutativity of prefix and suffix
 
 #[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
-#[enum_stringify(suffix = Suff, prefix = Pref)]
+#[enum_stringify(suffix = "Suff", prefix = "Pref")]
 enum Number4 {
     Zero,
     One,

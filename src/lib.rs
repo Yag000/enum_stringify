@@ -47,7 +47,7 @@ mod attributes;
 /// use std::str::FromStr;
 ///
 /// #[derive(EnumStringify, Debug, PartialEq)]
-/// #[enum_stringify(prefix = MyPrefix, suffix = MySuffix)]
+/// #[enum_stringify(prefix = "MyPrefix", suffix = "MySuffix")]
 /// enum Numbers {
 ///   One,
 ///   Two,
@@ -58,6 +58,35 @@ mod attributes;
 ///
 /// assert_eq!(Numbers::try_from("MyPrefixOneMySuffix").unwrap(), Numbers::One);
 /// assert_eq!(Numbers::try_from("MyPrefixTwoMySuffix").unwrap(), Numbers::Two);
+/// ```
+///
+/// # Rename variants
+///
+/// You can rename the variants of the enum.
+/// This is useful if you want to have a different name for the enum variants
+/// and the string representation of the enum variants.
+///
+/// ```
+/// use enum_stringify::EnumStringify;
+/// use std::str::FromStr;
+///
+/// #[derive(EnumStringify, Debug, PartialEq)]
+/// enum Istari {
+///  #[enum_stringify(rename = "Ólorin")]
+///  Gandalf,
+///  Saruman,
+///  Radagast,
+///  Alatar,
+///  Pallando,
+/// }
+///
+/// assert_eq!(Istari::Gandalf.to_string(), "Ólorin");
+/// assert_eq!(Istari::Saruman.to_string(), "Saruman");
+/// assert_eq!(Istari::Radagast.to_string(), "Radagast");
+///
+/// assert_eq!(Istari::try_from("Ólorin").unwrap(), Istari::Gandalf);
+/// assert_eq!(Istari::try_from("Saruman").unwrap(), Istari::Saruman);
+/// assert_eq!(Istari::try_from("Radagast").unwrap(), Istari::Radagast);
 /// ```
 ///
 /// # Details
@@ -107,6 +136,7 @@ mod attributes;
 ///     }
 /// }
 /// ```
+///
 #[proc_macro_derive(EnumStringify, attributes(enum_stringify))]
 pub fn enum_stringify(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
@@ -117,13 +147,10 @@ pub fn enum_stringify(input: TokenStream) -> TokenStream {
 fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
     let attributes = Attributes::new(ast);
     let name = &ast.ident;
-    let variants = match ast.data {
-        syn::Data::Enum(ref e) => &e.variants,
-        _ => panic!("EnumToString only works with Enums"),
-    };
+    let coplues = attributes.apply();
 
-    let identifiers = variants.iter().map(|v| &v.ident).collect::<Vec<_>>();
-    let names = attributes.apply(&identifiers);
+    let identifiers: Vec<&syn::Ident> = coplues.iter().map(|(i, _)| i).collect();
+    let names: Vec<syn::Ident> = coplues.iter().map(|(_, n)| n.clone()).collect();
 
     let mut gen = impl_display(name, &identifiers, &names);
     gen.extend(impl_from_str(name, &identifiers, &names));
