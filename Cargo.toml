@@ -23,5 +23,5 @@ quote = "1.0.33"
 syn = "2.0.39"
 
 [dev-dependencies]
-serde = { version = "1.0.190", features = ["derive"] }
+serde = { version = "1.0.192", features = ["derive"] }
 
