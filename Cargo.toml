@@ -18,7 +18,7 @@ keywords = ["enum", "string", "derive", "macro"]
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "1.0.73"
+proc-macro2 = "1.0.76"
 quote = "1.0.34"
 syn = "2.0.45"
 
