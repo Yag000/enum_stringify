@@ -20,7 +20,7 @@ proc-macro = true
 [dependencies]
 proc-macro2 = "1.0.73"
 quote = "1.0.34"
-syn = "2.0.43"
+syn = "2.0.45"
 
 [dev-dependencies]
 serde = { version = "1.0.193", features = ["derive"] }
