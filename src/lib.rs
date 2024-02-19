@@ -60,6 +60,28 @@ mod attributes;
 /// assert_eq!(Numbers::try_from("MyPrefixTwoMySuffix").unwrap(), Numbers::Two);
 /// ```
 ///
+/// # Case
+///
+/// You can also set the case ("lower" or "upper") of the string representation of the enum variants.
+///
+/// ```
+/// use enum_stringify::EnumStringify;
+/// use std::str::FromStr;
+///
+/// #[derive(EnumStringify, Debug, PartialEq)]
+/// #[enum_stringify(case = "lower")]
+/// enum Numbers {
+///  One,
+///  Two,
+/// }
+///
+/// assert_eq!(Numbers::One.to_string(), "one");
+/// assert_eq!(Numbers::Two.to_string(), "two");
+///
+/// assert_eq!(Numbers::try_from("one").unwrap(), Numbers::One);
+/// assert_eq!(Numbers::try_from("two").unwrap(), Numbers::Two);
+/// ```
+///
 /// # Rename variants
 ///
 /// You can rename the variants of the enum.
@@ -136,7 +158,7 @@ mod attributes;
 ///     }
 /// }
 /// ```
-///
+
 #[proc_macro_derive(EnumStringify, attributes(enum_stringify))]
 pub fn enum_stringify(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);

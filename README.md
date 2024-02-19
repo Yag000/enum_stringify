@@ -29,13 +29,13 @@ fn main() {
 ### Custom string representation
 
 You can customize the string representation of the enum by adding rpefixes or/and suffixes to the
-variants.
+variants and also changing the case of the string representation.
 
 ```rust
 use enum_stringify::EnumStringify;
 
 #[derive(EnumStringify)]
-#[enum_stringify(prefix = "MyPrefix", suffix = "MySuffix")]
+#[enum_stringify(prefix = "MyPrefix", suffix = "MySuffix", case = "upper")]
 enum MyEnum {
     Variant1,
     Variant2,
