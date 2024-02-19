@@ -12,8 +12,8 @@ fn parse_string(s: String) -> Result<String, ()> {
 }
 
 pub(crate) enum Case {
-    Camel,
-    Snake,
+    Lower,
+    Upper,
 }
 
 impl TryFrom<(String, String)> for Case {
@@ -33,8 +33,8 @@ impl TryFrom<String> for Case {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Ok(match value.as_str() {
-            "\"camel\"" => Self::Camel,
-            "\"snake\"" => Self::Snake,
+            "\"lower\"" => Self::Lower,
+            "\"upper\"" => Self::Upper,
             _ => Err(())?,
         })
     }
@@ -233,6 +233,14 @@ impl Attributes {
             if let Some(suffix) = &self.suffix {
                 new_name.push_str(suffix);
             }
+
+            if let Some(case) = &self.case {
+                new_name = match case {
+                    Case::Lower => new_name.to_lowercase(),
+                    Case::Upper => new_name.to_uppercase(),
+                };
+            }
+
             new_names.push(syn::Ident::new(&new_name, name.span()));
         }
 
