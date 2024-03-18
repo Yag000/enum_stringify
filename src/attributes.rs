@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use proc_macro2::{Ident, TokenStream};
 use syn::{DeriveInput, Meta};
 
-fn parse_string(s: String) -> Result<String, ()> {
+fn parse_string(s: &str) -> Result<String, ()> {
     if s.starts_with('"') && s.ends_with('"') {
         Ok(s[1..s.len() - 1].to_string())
     } else {
@@ -53,14 +53,14 @@ impl TryFrom<(String, String)> for Rename {
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "prefix" {
             Ok(Self {
-                prefix: Some(parse_string(value.1)?),
+                prefix: Some(parse_string(value.1.as_str())?),
                 suffix: None,
                 case: None,
             })
         } else if value.0 == "suffix" {
             Ok(Self {
                 prefix: None,
-                suffix: Some(parse_string(value.1)?),
+                suffix: Some(parse_string(value.1.as_str())?),
                 case: None,
             })
         } else if value.0 == "case" {
@@ -128,7 +128,7 @@ impl TryFrom<(String, String)> for VariantRename {
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "rename" {
-            Ok(Self(parse_string(value.1)?))
+            Ok(Self(parse_string(value.1.as_str())?))
         } else {
             Err(())
         }
@@ -217,7 +217,7 @@ impl Attributes {
     pub(crate) fn apply(&self) -> Vec<(syn::Ident, syn::Ident)> {
         let mut new_names = Vec::new();
 
-        for (name, rename) in self.variant_renames.iter() {
+        for (name, rename) in &self.variant_renames {
             if let Some(rename) = rename {
                 new_names.push(syn::Ident::new(&rename.0, name.span()));
                 continue;
@@ -264,20 +264,22 @@ impl Attributes {
         while let Some(attribute_type) = tokens.next() {
             let attribute_type = attribute_type.to_string();
 
-            if tokens.next().expect("type must be specified").to_string() != "=" {
-                panic!("too many arguments");
-            }
+            assert!(
+                tokens.next().expect("type must be specified").to_string() == "=",
+                "too many arguments"
+            );
             let value = tokens.next().expect("value must be specified").to_string();
 
             match T::try_from((attribute_type.clone(), value)) {
                 Ok(value) => result.push(value),
-                Err(_) => return Err(format!("Invalid argument: {}", attribute_type)),
+                Err(_) => return Err(format!("Invalid argument: {attribute_type}")),
             }
 
             if let Some(comma_separator) = tokens.next() {
-                if comma_separator.to_string() != "," {
-                    panic!("Expected a commaseparated attribute list");
-                }
+                assert!(
+                    comma_separator.to_string() == ",",
+                    "Expected a commaseparated attribute list"
+                );
             }
         }
         Ok(result)
