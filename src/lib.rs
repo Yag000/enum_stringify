@@ -121,7 +121,7 @@ mod attributes;
 ///   Two,
 /// }
 ///
-/// impl std::fmt::Display for Numbers {
+/// impl ::std::fmt::Display for Numbers {
 ///     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 ///         match self {
 ///             Self::One => write!(f, "One"),
@@ -150,7 +150,7 @@ mod attributes;
 ///     }
 /// }
 ///
-/// impl std::str::FromStr for Numbers {
+/// impl ::std::str::FromStr for Numbers {
 ///     type Err = ();
 ///
 ///     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -189,7 +189,7 @@ fn impl_display(
     names: &Vec<syn::Ident>,
 ) -> TokenStream {
     let gen = quote! {
-        impl std::fmt::Display for #name {
+        impl ::std::fmt::Display for #name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
                 match self {
                     #(Self::#identifiers=> write!(f, stringify!(#names))),*
@@ -241,7 +241,7 @@ fn impl_from_string(name: &syn::Ident) -> TokenStream {
 /// Implementation of [`std::str::FromStr`].
 fn impl_from_str_trait(name: &syn::Ident) -> TokenStream {
     let gen = quote! {
-        impl std::str::FromStr for #name {
+        impl ::std::str::FromStr for #name {
             type Err = ();
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
