@@ -172,7 +172,7 @@ fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
     let coplues = attributes.apply();
 
     let identifiers: Vec<&syn::Ident> = coplues.iter().map(|(i, _)| i).collect();
-    let names: Vec<syn::Ident> = coplues.iter().map(|(_, n)| n.clone()).collect();
+    let names: Vec<String> = coplues.iter().map(|(_, n)| n.clone()).collect();
 
     let mut gen = impl_display(name, &identifiers, &names);
     gen.extend(impl_from_str(name, &identifiers, &names));
@@ -186,13 +186,13 @@ fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
 fn impl_display(
     name: &syn::Ident,
     identifiers: &Vec<&syn::Ident>,
-    names: &Vec<syn::Ident>,
+    names: &Vec<String>,
 ) -> TokenStream {
     let gen = quote! {
         impl ::std::fmt::Display for #name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
                 match self {
-                    #(Self::#identifiers=> write!(f, stringify!(#names))),*
+                    #(Self::#identifiers=> write!(f, #names)),*
                 }
             }
         }
@@ -205,7 +205,7 @@ fn impl_display(
 fn impl_from_str(
     name: &syn::Ident,
     identifiers: &Vec<&syn::Ident>,
-    names: &Vec<syn::Ident>,
+    names: &Vec<String>,
 ) -> TokenStream {
     let gen = quote! {
         impl TryFrom<&str> for #name {
@@ -213,7 +213,7 @@ fn impl_from_str(
 
             fn try_from(s: &str) -> Result<Self, Self::Error> {
                 match s {
-                    #(stringify!(#names) => Ok(Self::#identifiers),)*
+                    #(#names => Ok(Self::#identifiers),)*
                     _ => Err(()),
                 }
             }

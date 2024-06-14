@@ -65,3 +65,28 @@ fn test_double_rename_from_str() {
         Ok(DoubleAniurRename::Maiar)
     );
 }
+
+#[derive(PartialEq, Debug, enum_stringify::EnumStringify)]
+enum Seperator {
+    #[enum_stringify(rename = " ")]
+    Space,
+    #[enum_stringify(rename = "-")]
+    Hyphen,
+    #[enum_stringify(rename = "")]
+    Empty,
+}
+
+#[test]
+fn test_seperator_rename() {
+    assert_eq!(Seperator::Space.to_string(), " ");
+    assert_eq!(Seperator::Hyphen.to_string(), "-");
+    assert_eq!(Seperator::Empty.to_string(), "");
+}
+
+#[test]
+fn test_seperator_rename_from_str() {
+    assert_eq!(Seperator::from_str(" "), Ok(Seperator::Space));
+    assert_eq!(Seperator::from_str("-"), Ok(Seperator::Hyphen));
+    assert_eq!(Seperator::from_str(""), Ok(Seperator::Empty));
+    assert!(Seperator::from_str("|").is_err());
+}

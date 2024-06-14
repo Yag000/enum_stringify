@@ -214,12 +214,12 @@ impl Attributes {
         self.variant_renames.insert(variant.ident.clone(), rename);
     }
 
-    pub(crate) fn apply(&self) -> Vec<(syn::Ident, syn::Ident)> {
+    pub(crate) fn apply(&self) -> Vec<(syn::Ident, String)> {
         let mut new_names = Vec::new();
 
         for (name, rename) in &self.variant_renames {
             if let Some(rename) = rename {
-                new_names.push(syn::Ident::new(&rename.0, name.span()));
+                new_names.push(rename.0.clone());
                 continue;
             }
             let mut new_name = String::new();
@@ -241,7 +241,7 @@ impl Attributes {
                 };
             }
 
-            new_names.push(syn::Ident::new(&new_name, name.span()));
+            new_names.push(new_name);
         }
 
         let tmp = self
