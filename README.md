@@ -28,7 +28,7 @@ fn main() {
 
 ### Custom string representation
 
-You can customize the string representation of the enum by adding rpefixes or/and suffixes to the
+You can customize the string representation of the enum by adding prefixes or/and suffixes to the
 variants and also changing the case of the string representation.
 
 ```rust

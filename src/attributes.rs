@@ -278,7 +278,7 @@ impl Attributes {
             if let Some(comma_separator) = tokens.next() {
                 assert!(
                     comma_separator.to_string() == ",",
-                    "Expected a commaseparated attribute list"
+                    "Expected a comma separated attribute list"
                 );
             }
         }

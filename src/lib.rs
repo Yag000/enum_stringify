@@ -169,10 +169,10 @@ pub fn enum_stringify(input: TokenStream) -> TokenStream {
 fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
     let attributes = Attributes::new(ast);
     let name = &ast.ident;
-    let coplues = attributes.apply();
+    let pairs = attributes.apply();
 
-    let identifiers: Vec<&syn::Ident> = coplues.iter().map(|(i, _)| i).collect();
-    let names: Vec<String> = coplues.iter().map(|(_, n)| n.clone()).collect();
+    let identifiers: Vec<&syn::Ident> = pairs.iter().map(|(i, _)| i).collect();
+    let names: Vec<String> = pairs.iter().map(|(_, n)| n.clone()).collect();
 
     let mut gen = impl_display(name, &identifiers, &names);
     gen.extend(impl_from_str(name, &identifiers, &names));
