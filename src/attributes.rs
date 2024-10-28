@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use convert_case::Casing;
 use proc_macro2::{Ident, TokenStream};
 use syn::{DeriveInput, Meta};
 
@@ -11,10 +12,7 @@ fn parse_string(s: &str) -> Result<String, ()> {
     }
 }
 
-pub(crate) enum Case {
-    Lower,
-    Upper,
-}
+pub(crate) struct Case(convert_case::Case);
 
 impl TryFrom<(String, String)> for Case {
     type Error = ();
@@ -32,11 +30,26 @@ impl TryFrom<String> for Case {
     type Error = ();
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(match value.as_str() {
-            "\"lower\"" => Self::Lower,
-            "\"upper\"" => Self::Upper,
+        Ok(Self(match value.as_str() {
+            "\"upper\"" => convert_case::Case::Upper,
+            "\"lower\"" => convert_case::Case::Lower,
+            "\"title\"" => convert_case::Case::Title,
+            "\"toggle\"" => convert_case::Case::Toggle,
+            "\"camel\"" => convert_case::Case::Camel,
+            "\"pascal\"" => convert_case::Case::Pascal,
+            "\"upper_camel\"" => convert_case::Case::UpperCamel,
+            "\"snake\"" => convert_case::Case::Snake,
+            "\"upper_snake\"" => convert_case::Case::UpperSnake,
+            "\"screaming_snake\"" => convert_case::Case::ScreamingSnake,
+            "\"kebab\"" => convert_case::Case::Kebab,
+            "\"cobol\"" => convert_case::Case::Cobol,
+            "\"upper_kebab\"" => convert_case::Case::UpperKebab,
+            "\"train\"" => convert_case::Case::Train,
+            "\"flat\"" => convert_case::Case::Flat,
+            "\"upper_flat\"" => convert_case::Case::UpperFlat,
+            "\"alternating\"" => convert_case::Case::Alternating,
             _ => Err(())?,
-        })
+        }))
     }
 }
 
@@ -235,10 +248,7 @@ impl Attributes {
             }
 
             if let Some(case) = &self.case {
-                new_name = match case {
-                    Case::Lower => new_name.to_lowercase(),
-                    Case::Upper => new_name.to_uppercase(),
-                };
+                new_name = new_name.to_case(case.0);
             }
 
             new_names.push(new_name);
