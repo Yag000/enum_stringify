@@ -68,7 +68,7 @@ fn test_prefix_suffix_from_str() {
 // Testing commutativity of prefix, suffix and case
 
 #[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
-#[enum_stringify(suffix = "Suff", prefix = "Pref", case = "lower")]
+#[enum_stringify(suffix = "Suff", prefix = "Pref", case = "flat")]
 enum Number4 {
     Zero,
     One,
@@ -76,21 +76,21 @@ enum Number4 {
 }
 
 #[test]
-fn test_suffix_prefix_lower_to_string() {
+fn test_suffix_prefix_flat_to_string() {
     assert_eq!(Number4::Zero.to_string(), "prefzerosuff");
     assert_eq!(Number4::One.to_string(), "prefonesuff");
     assert_eq!(Number4::Two.to_string(), "preftwosuff");
 }
 
 #[test]
-fn test_suffix_prefix_lower_from_str() {
+fn test_suffix_prefix_flat_from_str() {
     assert_eq!(Number4::from_str("prefzerosuff"), Ok(Number4::Zero));
     assert_eq!(Number4::from_str("prefonesuff"), Ok(Number4::One));
     assert_eq!(Number4::from_str("preftwosuff"), Ok(Number4::Two));
 }
 
 #[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
-#[enum_stringify(suffix = "Suff", prefix = "Pref", case = "upper")]
+#[enum_stringify(suffix = "Suff", prefix = "Pref", case = "upper_flat")]
 enum Number5 {
     Zero,
     One,
@@ -98,14 +98,14 @@ enum Number5 {
 }
 
 #[test]
-fn test_suffix_prefix_upper_to_string() {
+fn test_suffix_prefix_upper_flat_to_string() {
     assert_eq!(Number5::Zero.to_string(), "PREFZEROSUFF");
     assert_eq!(Number5::One.to_string(), "PREFONESUFF");
     assert_eq!(Number5::Two.to_string(), "PREFTWOSUFF");
 }
 
 #[test]
-fn test_suffix_prefix_upper_from_str() {
+fn test_suffix_prefix_upper_flat_from_str() {
     assert_eq!(Number5::from_str("PREFZEROSUFF"), Ok(Number5::Zero));
     assert_eq!(Number5::from_str("PREFONESUFF"), Ok(Number5::One));
     assert_eq!(Number5::from_str("PREFTWOSUFF"), Ok(Number5::Two));
