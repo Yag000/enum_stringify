@@ -1,6 +1,6 @@
 [package]
 name = "enum_stringify"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 description="Macro to generate string conversion functions for enums"
 authors = ["Yago Iglesias Vazquez  <yago.iglesias.vazquez@gmail.com>"]
