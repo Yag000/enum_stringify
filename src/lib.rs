@@ -131,7 +131,7 @@ mod attributes;
 /// }
 ///
 /// impl TryFrom<&str> for Numbers {
-///     type Error = ();
+///     type Error = String;
 ///
 ///     fn try_from(s: &str) -> Result<Self, Self::Error> {
 ///         match s {    
@@ -149,7 +149,7 @@ mod attributes;
 /// }
 ///
 /// impl TryFrom<String> for Numbers {
-///     type Error = ();
+///     type Error = String;
 ///         
 ///     fn try_from(s: String) -> Result<Self, Self::Error> {
 ///         s.as_str().try_into()
@@ -157,7 +157,7 @@ mod attributes;
 /// }
 ///
 /// impl ::std::str::FromStr for Numbers {
-///     type Err = ();
+///     type Err = String;
 ///
 ///     fn from_str(s: &str) -> Result<Self, Self::Err> {
 ///         s.try_into()
