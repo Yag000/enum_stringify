@@ -164,7 +164,6 @@ mod attributes;
 ///     }
 /// }
 /// ```
-
 #[proc_macro_derive(EnumStringify, attributes(enum_stringify))]
 pub fn enum_stringify(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
