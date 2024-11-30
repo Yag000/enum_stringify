@@ -131,19 +131,25 @@ mod attributes;
 /// }
 ///
 /// impl TryFrom<&str> for Numbers {
-///     type Error = ();
+///     type Error = String;
 ///
 ///     fn try_from(s: &str) -> Result<Self, Self::Error> {
 ///         match s {    
 ///             "One" => Ok(Self::One),
 ///             "Two" => Ok(Self::Two),
-///             _ => Err(()),
+///             _ => {
+///                 let mut err_msg = "Failed parse string ".to_string();
+///                 err_msg.push_str(s);
+///                 err_msg.push_str(" for enum ");
+///                 err_msg.push_str("Numbers");
+///                 Err(err_msg)
+///             }
 ///         }
 ///     }
 /// }
 ///
 /// impl TryFrom<String> for Numbers {
-///     type Error = ();
+///     type Error = String;
 ///         
 ///     fn try_from(s: String) -> Result<Self, Self::Error> {
 ///         s.as_str().try_into()
@@ -151,14 +157,13 @@ mod attributes;
 /// }
 ///
 /// impl ::std::str::FromStr for Numbers {
-///     type Err = ();
+///     type Err = String;
 ///
 ///     fn from_str(s: &str) -> Result<Self, Self::Err> {
 ///         s.try_into()
 ///     }
 /// }
 /// ```
-
 #[proc_macro_derive(EnumStringify, attributes(enum_stringify))]
 pub fn enum_stringify(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
@@ -207,14 +212,21 @@ fn impl_from_str(
     identifiers: &Vec<&syn::Ident>,
     names: &Vec<String>,
 ) -> TokenStream {
+    let name_str = name.to_string();
     let gen = quote! {
         impl TryFrom<&str> for #name {
-            type Error = ();
+            type Error = String;
 
             fn try_from(s: &str) -> Result<Self, Self::Error> {
                 match s {
                     #(#names => Ok(Self::#identifiers),)*
-                    _ => Err(()),
+                    _ => {
+                        let mut err_msg = "Failed parse string ".to_string();
+                        err_msg.push_str(s);
+                        err_msg.push_str(" for enum ");
+                        err_msg.push_str(#name_str);
+                        Err(err_msg)
+                    }
                 }
             }
         }
@@ -227,7 +239,7 @@ fn impl_from_str(
 fn impl_from_string(name: &syn::Ident) -> TokenStream {
     let gen = quote! {
         impl TryFrom<String> for #name {
-            type Error = ();
+            type Error = String;
 
             fn try_from(s: String) -> Result<Self, Self::Error> {
                 s.as_str().try_into()
@@ -242,7 +254,7 @@ fn impl_from_string(name: &syn::Ident) -> TokenStream {
 fn impl_from_str_trait(name: &syn::Ident) -> TokenStream {
     let gen = quote! {
         impl ::std::str::FromStr for #name {
-            type Err = ();
+            type Err = String;
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 s.try_into()
