@@ -35,7 +35,7 @@ variants and also changing the case of the string representation.
 use enum_stringify::EnumStringify;
 
 #[derive(EnumStringify)]
-#[enum_stringify(prefix = "MyPrefix", suffix = "MySuffix", case = "upper")]
+#[enum_stringify(prefix = "MyPrefix", suffix = "MySuffix", case = "upper_flat")]
 enum MyEnum {
     Variant1,
     Variant2,
