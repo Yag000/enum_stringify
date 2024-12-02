@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "enum_stringify"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "convert_case",
  "proc-macro2",
