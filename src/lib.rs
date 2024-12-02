@@ -62,7 +62,10 @@ mod attributes;
 ///
 /// # Case
 ///
-/// You can also set the case ("lower" or "upper") of the string representation of the enum variants.
+/// You can also set the case of the string representation of the enum variants.
+/// Case conversion is provided by the [`convert_case`] crate. Refer to the variants
+/// of the [`convert_case::Case`] enum for options (expressed in lower snake case).
+/// The exception are the `Random` and `PseudoRandom` variants, which are not accepted.
 ///
 /// ```
 /// use enum_stringify::EnumStringify;
