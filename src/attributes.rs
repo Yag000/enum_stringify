@@ -217,25 +217,22 @@ impl Variants {
         self.variant_renames.insert(variant.ident.clone(), rename);
     }
 
-    /// Applies attributes (prefix, suffix, case) to enum variant names.
+    /// Applies renaming rules to each enum variant name.
+    ///
+    /// This method determines the final string representation of each variant
+    /// based on the `#[enum_stringify(...)]` attributes, including renaming,
+    /// prefix/suffix, and case transformation.
     pub(crate) fn apply(&self, attributes: &Attributes) -> Vec<(syn::Ident, String)> {
-        let mut new_names = Vec::new();
-
-        for (name, rename) in &self.variant_renames {
-            if let Some(rename) = rename {
-                new_names.push(rename.0.clone());
-                continue;
-            }
-            new_names.push(attributes.rename(name.to_string().as_str()));
-        }
-
-        let tmp = self
-            .variant_renames
-            .keys()
-            .cloned()
-            .zip(new_names)
-            .collect::<Vec<_>>();
-
-        tmp
+        self.variant_renames
+            .iter()
+            .map(|(ident, rename)| {
+                let new_name = if let Some(rename) = rename {
+                    rename.0.clone()
+                } else {
+                    attributes.rename(ident.to_string().as_str())
+                };
+                (ident.clone(), new_name)
+            })
+            .collect()
     }
 }
