@@ -1,7 +1,9 @@
 use convert_case::Casing;
 
+/// Wrapper struct around `convert_case::Case` to represent different casing styles.
 pub(crate) struct Case(convert_case::Case);
 
+// This is used to check if the first string is "case" and then attempt conversion of the second string.
 impl TryFrom<(String, String)> for Case {
     type Error = ();
 
@@ -14,6 +16,7 @@ impl TryFrom<(String, String)> for Case {
     }
 }
 
+// Maps specific string values to their corresponding `convert_case::Case` variant.
 impl TryFrom<String> for Case {
     type Error = ();
 
@@ -42,6 +45,7 @@ impl TryFrom<String> for Case {
 }
 
 impl Case {
+    /// Applies the stored casing style to the given string `s` and returns the formatted result.
     pub(crate) fn to_case(&self, s: &str) -> String {
         s.to_case(self.0)
     }

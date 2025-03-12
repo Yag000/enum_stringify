@@ -6,6 +6,7 @@ use syn::{DeriveInput, Meta};
 
 static ATTRIBUTE_NAME: &str = "enum_stringify";
 
+/// Parses a string literal by removing surrounding quotes if present.
 fn parse_string(s: &str) -> Result<String, ()> {
     if s.starts_with('"') && s.ends_with('"') {
         Ok(s[1..s.len() - 1].to_string())
@@ -15,6 +16,7 @@ fn parse_string(s: &str) -> Result<String, ()> {
 }
 
 #[derive(Clone)]
+/// Represents a rename attribute applied to an enum variant.
 pub struct VariantRename(String);
 
 impl TryFrom<(String, String)> for VariantRename {
@@ -30,6 +32,7 @@ impl TryFrom<(String, String)> for VariantRename {
 }
 
 impl VariantRename {
+    /// Parses an attribute to determine if it is a rename directive.
     fn parse_args(attribute: &syn::Attribute) -> Option<Self> {
         if !attribute.path().is_ident(ATTRIBUTE_NAME) {
             return None;
@@ -60,6 +63,7 @@ impl VariantRename {
     }
 }
 
+// Represents different renaming attributes that can be applied to enum variants.
 pub enum Attribute {
     Case(Case),
     Prefix(String),
