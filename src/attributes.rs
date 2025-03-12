@@ -15,6 +15,37 @@ fn parse_string(s: &str) -> Result<String, &'static str> {
     }
 }
 
+fn parse_token_list<T>(tokens: &TokenStream) -> Result<Vec<T>, String>
+where
+    T: TryFrom<(String, String)>,
+{
+    let mut result = Vec::new();
+    let mut tokens = tokens.clone().into_iter();
+
+    while let Some(attribute_type) = tokens.next() {
+        let attribute_type = attribute_type.to_string();
+
+        assert!(
+            tokens.next().expect("type must be specified").to_string() == "=",
+            "too many arguments"
+        );
+        let value = tokens.next().expect("value must be specified").to_string();
+
+        match T::try_from((attribute_type.clone(), value)) {
+            Ok(value) => result.push(value),
+            Err(_) => return Err(format!("Invalid argument: {attribute_type}")),
+        }
+
+        if let Some(comma_separator) = tokens.next() {
+            assert!(
+                comma_separator.to_string() == ",",
+                "Expected a comma separated attribute list"
+            );
+        }
+    }
+    Ok(result)
+}
+
 #[derive(Clone)]
 /// Represents a rename attribute applied to an enum variant.
 struct VariantRename(String);
@@ -49,7 +80,7 @@ impl VariantRename {
 
                 if path == vec![ATTRIBUTE_NAME] {
                     Some(
-                        Attributes::parse_token_list::<Self>(&list.tokens)
+                        parse_token_list::<Self>(&list.tokens)
                             .ok()?
                             .first()?
                             .clone(),
@@ -59,29 +90,6 @@ impl VariantRename {
                 }
             }
             _ => None,
-        }
-    }
-}
-
-// Represents different renaming attributes that can be applied to enum variants.
-enum RenameAttribute {
-    Case(Case),
-    Prefix(String),
-    Suffix(String),
-}
-
-impl TryFrom<(String, String)> for RenameAttribute {
-    type Error = &'static str;
-
-    fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
-        if value.0 == "prefix" {
-            Ok(Self::Prefix(parse_string(value.1.as_str())?))
-        } else if value.0 == "suffix" {
-            Ok(Self::Suffix(parse_string(value.1.as_str())?))
-        } else if value.0 == "case" {
-            Ok(Self::Case(Case::try_from(value)?))
-        } else {
-            Err("Not a rename attribute")
         }
     }
 }
@@ -132,10 +140,9 @@ impl Attributes {
                     .collect::<Vec<_>>();
 
                 if path == vec![ATTRIBUTE_NAME] {
-                    let attributes =
-                        Attributes::parse_token_list::<RenameAttribute>(&list.tokens).ok()?;
-                    for attr in attributes {
-                        new.merge_attribute(attr);
+                    let attributes = parse_token_list::<(String, String)>(&list.tokens).ok()?;
+                    for value in attributes {
+                        new.update_attribute(value);
                     }
                     Some(new)
                 } else {
@@ -146,45 +153,15 @@ impl Attributes {
         }
     }
 
-    /// Merges parsed attribute into the struct.
-    fn merge_attribute(&mut self, attr: RenameAttribute) {
-        match attr {
-            RenameAttribute::Prefix(s) => self.prefix = Some(s),
-            RenameAttribute::Suffix(s) => self.suffix = Some(s),
-            RenameAttribute::Case(s) => self.case = Some(s),
+    /// Updates an attribute with a new parameter
+    fn update_attribute(&mut self, value: (String, String)) {
+        if value.0 == "prefix" {
+            self.prefix = Some(parse_string(value.1.as_str()).expect("Not a rename attribute"));
+        } else if value.0 == "suffix" {
+            self.suffix = Some(parse_string(value.1.as_str()).expect("Not a rename attribute"));
+        } else if value.0 == "case" {
+            self.case = Some(Case::try_from(value).expect("Not a rename attribute"));
         }
-    }
-
-    /// Parses tokens into attributes.
-    fn parse_token_list<T>(tokens: &TokenStream) -> Result<Vec<T>, String>
-    where
-        T: TryFrom<(String, String)>,
-    {
-        let mut result = Vec::new();
-        let mut tokens = tokens.clone().into_iter();
-
-        while let Some(attribute_type) = tokens.next() {
-            let attribute_type = attribute_type.to_string();
-
-            assert!(
-                tokens.next().expect("type must be specified").to_string() == "=",
-                "too many arguments"
-            );
-            let value = tokens.next().expect("value must be specified").to_string();
-
-            match T::try_from((attribute_type.clone(), value)) {
-                Ok(value) => result.push(value),
-                Err(_) => return Err(format!("Invalid argument: {attribute_type}")),
-            }
-
-            if let Some(comma_separator) = tokens.next() {
-                assert!(
-                    comma_separator.to_string() == ",",
-                    "Expected a comma separated attribute list"
-                );
-            }
-        }
-        Ok(result)
     }
 
     fn rename(&self, s: &str) -> String {
