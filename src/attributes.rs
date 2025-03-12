@@ -64,13 +64,13 @@ impl VariantRename {
 }
 
 // Represents different renaming attributes that can be applied to enum variants.
-pub enum Attribute {
+pub enum RenameAttribute {
     Case(Case),
     Prefix(String),
     Suffix(String),
 }
 
-impl TryFrom<(String, String)> for Attribute {
+impl TryFrom<(String, String)> for RenameAttribute {
     type Error = ();
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
@@ -131,7 +131,7 @@ impl Attributes {
 
                 if path == vec![ATTRIBUTE_NAME] {
                     let attributes =
-                        Attributes::parse_token_list::<Attribute>(&list.tokens).ok()?;
+                        Attributes::parse_token_list::<RenameAttribute>(&list.tokens).ok()?;
                     for attr in attributes {
                         new.merge_attribute(attr);
                     }
@@ -144,11 +144,11 @@ impl Attributes {
         }
     }
 
-    fn merge_attribute(&mut self, attr: Attribute) {
+    fn merge_attribute(&mut self, attr: RenameAttribute) {
         match attr {
-            Attribute::Prefix(s) => self.prefix = Some(s),
-            Attribute::Suffix(s) => self.suffix = Some(s),
-            Attribute::Case(s) => self.case = Some(s),
+            RenameAttribute::Prefix(s) => self.prefix = Some(s),
+            RenameAttribute::Suffix(s) => self.suffix = Some(s),
+            RenameAttribute::Case(s) => self.case = Some(s),
         }
     }
 
