@@ -3,12 +3,13 @@
 //! Derive [`std::fmt::Display`], [`std::str::FromStr`], [`TryFrom<&str>`] and
 //! [`TryFrom<String>`] with a simple derive macro: [`EnumStringify`].
 
-use attributes::Attributes;
+use attributes::{Attributes, Variants};
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
 mod attributes;
+mod case;
 
 /// Derive [`std::fmt::Display`], [`std::str::FromStr`], [`TryFrom<&str>`] and
 /// [`TryFrom<String>`] for an enum.
@@ -176,8 +177,10 @@ pub fn enum_stringify(input: TokenStream) -> TokenStream {
 
 fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
     let attributes = Attributes::new(ast);
+    let variants = Variants::new(ast);
+
     let name = &ast.ident;
-    let pairs = attributes.apply();
+    let pairs = variants.apply(&attributes);
 
     let identifiers: Vec<&syn::Ident> = pairs.iter().map(|(i, _)| i).collect();
     let names: Vec<String> = pairs.iter().map(|(_, n)| n.clone()).collect();
