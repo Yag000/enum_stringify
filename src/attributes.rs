@@ -7,11 +7,11 @@ use syn::{DeriveInput, Meta};
 static ATTRIBUTE_NAME: &str = "enum_stringify";
 
 /// Parses a string literal by removing surrounding quotes if present.
-fn parse_string(s: &str) -> Result<String, ()> {
-    if s.starts_with('"') && s.ends_with('"') {
-        Ok(s[1..s.len() - 1].to_string())
+fn parse_string(s: &str) -> Result<String, &'static str> {
+    if let Some(stripped) = s.strip_prefix('"').and_then(|s| s.strip_suffix('"')) {
+        Ok(stripped.to_string())
     } else {
-        Err(())
+        Err("String must be enclosed in double quotes")
     }
 }
 
@@ -20,13 +20,13 @@ fn parse_string(s: &str) -> Result<String, ()> {
 struct VariantRename(String);
 
 impl TryFrom<(String, String)> for VariantRename {
-    type Error = ();
+    type Error = &'static str;
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "rename" {
             Ok(Self(parse_string(value.1.as_str())?))
         } else {
-            Err(())
+            Err("Not a rename string")
         }
     }
 }
@@ -71,7 +71,7 @@ enum RenameAttribute {
 }
 
 impl TryFrom<(String, String)> for RenameAttribute {
-    type Error = ();
+    type Error = &'static str;
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "prefix" {
@@ -81,7 +81,7 @@ impl TryFrom<(String, String)> for RenameAttribute {
         } else if value.0 == "case" {
             Ok(Self::Case(Case::try_from(value)?))
         } else {
-            Err(())
+            Err("Not a rename attribute")
         }
     }
 }
