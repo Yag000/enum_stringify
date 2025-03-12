@@ -1,20 +1,36 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use crate::case::Case;
 use proc_macro2::{Ident, TokenStream};
 use syn::{DeriveInput, Meta};
 
+/// The attribute name used for enum variant renaming.
 static ATTRIBUTE_NAME: &str = "enum_stringify";
 
-/// Parses a string literal by removing surrounding quotes if present.
+/// Parses a string literal by removing surrounding double quotes if present.
+///
+/// # Arguments
+/// * `s` - A string slice containing the quoted string.
+///
+/// # Returns
+/// * `Ok(String)` if the string is correctly formatted.
+/// * `Err(&'static str)` if the string is not enclosed in double quotes.
 fn parse_string(s: &str) -> Result<String, &'static str> {
-    if let Some(stripped) = s.strip_prefix('"').and_then(|s| s.strip_suffix('"')) {
-        Ok(stripped.to_string())
-    } else {
-        Err("String must be enclosed in double quotes")
-    }
+    s.strip_prefix('"')
+        .and_then(|s| s.strip_suffix('"'))
+        .map(|s| s.to_string())
+        .ok_or("String must be enclosed in double quotes")
 }
 
+/// Parses a list of attribute tokens into a vector of type `T`.
+///
+/// # Arguments
+/// * `tokens` - A reference to a token stream containing attributes.
+///
+/// # Returns
+/// * `Ok(Vec<T>)` if parsing succeeds.
+/// * `Err(String)` if parsing fails due to incorrect syntax.
 fn parse_token_list<T>(tokens: &TokenStream) -> Result<Vec<T>, String>
 where
     T: TryFrom<(String, String)>,
@@ -25,11 +41,14 @@ where
     while let Some(attribute_type) = tokens.next() {
         let attribute_type = attribute_type.to_string();
 
-        assert!(
-            tokens.next().expect("type must be specified").to_string() == "=",
-            "too many arguments"
-        );
-        let value = tokens.next().expect("value must be specified").to_string();
+        let Some(eq_token) = tokens.next() else {
+            return Err(format!("Expected '=' after '{}'", attribute_type));
+        };
+        if eq_token.to_string() != "=" {
+            return Err(format!("Unexpected token '{}', expected '='", eq_token));
+        }
+
+        let value = tokens.next().ok_or("Value must be specified")?.to_string();
 
         match T::try_from((attribute_type.clone(), value)) {
             Ok(value) => result.push(value),
@@ -37,17 +56,16 @@ where
         }
 
         if let Some(comma_separator) = tokens.next() {
-            assert!(
-                comma_separator.to_string() == ",",
-                "Expected a comma separated attribute list"
-            );
+            if comma_separator.to_string() != "," {
+                return Err("Expected a comma-separated attribute list".to_string());
+            }
         }
     }
     Ok(result)
 }
 
+/// Represents a rename attribute for an enum variant.
 #[derive(Clone)]
-/// Represents a rename attribute applied to an enum variant.
 struct VariantRename(String);
 
 impl TryFrom<(String, String)> for VariantRename {
@@ -55,7 +73,7 @@ impl TryFrom<(String, String)> for VariantRename {
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "rename" {
-            Ok(Self(parse_string(value.1.as_str())?))
+            Ok(Self(parse_string(&value.1)?))
         } else {
             Err("Not a rename string")
         }
@@ -63,37 +81,23 @@ impl TryFrom<(String, String)> for VariantRename {
 }
 
 impl VariantRename {
-    /// Parses an attribute to determine if it is a rename directive.
+    /// Parses the rename attribute from a given `syn::Attribute`.
     fn parse_args(attribute: &syn::Attribute) -> Option<Self> {
         if !attribute.path().is_ident(ATTRIBUTE_NAME) {
             return None;
         }
 
         match &attribute.meta {
-            Meta::List(list) => {
-                let path = list
-                    .path
-                    .segments
-                    .iter()
-                    .map(|s| s.ident.to_string())
-                    .collect::<Vec<_>>();
-
-                if path == vec![ATTRIBUTE_NAME] {
-                    Some(
-                        parse_token_list::<Self>(&list.tokens)
-                            .ok()?
-                            .first()?
-                            .clone(),
-                    )
-                } else {
-                    None
-                }
-            }
+            Meta::List(list) => parse_token_list::<Self>(&list.tokens)
+                .ok()?
+                .first()
+                .cloned(),
             _ => None,
         }
     }
 }
 
+/// Represents attribute configurations for renaming enum variants.
 #[derive(Default)]
 pub(crate) struct Attributes {
     case: Option<Case>,
@@ -102,95 +106,70 @@ pub(crate) struct Attributes {
 }
 
 impl Attributes {
-    /// Constructs an `Attributes` instance by parsing derive attributes from an AST.
+    /// Constructs an `Attributes` instance by parsing the attributes of a derive input.
     pub(crate) fn new(ast: &DeriveInput) -> Self {
-        let mut new = Self {
-            case: None,
-            prefix: None,
-            suffix: None,
-        };
-
+        let mut new = Self::default();
         ast.attrs.iter().for_each(|attr| {
-            let rename_rules = Self::parse_args(attr);
-            if let Some(rename_rules) = rename_rules {
+            if let Some(rename_rules) = Self::parse_args(attr) {
                 new.prefix = rename_rules.prefix;
                 new.suffix = rename_rules.suffix;
                 new.case = rename_rules.case;
-            };
+            }
         });
-
         new
     }
 
-    /// Parses attributes related to casing, prefixes, and suffixes.
     fn parse_args(attribute: &syn::Attribute) -> Option<Self> {
         if !attribute.path().is_ident(ATTRIBUTE_NAME) {
             return None;
         }
 
         let mut new = Self::default();
-
         match &attribute.meta {
             Meta::List(list) => {
-                let path = list
-                    .path
-                    .segments
-                    .iter()
-                    .map(|s| s.ident.to_string())
-                    .collect::<Vec<_>>();
-
-                if path == vec![ATTRIBUTE_NAME] {
-                    let attributes = parse_token_list::<(String, String)>(&list.tokens).ok()?;
-                    for value in attributes {
-                        new.update_attribute(value);
-                    }
-                    Some(new)
-                } else {
-                    None
+                let attributes = parse_token_list::<(String, String)>(&list.tokens).ok()?;
+                for value in attributes {
+                    new.update_attribute(value);
                 }
+                Some(new)
             }
             _ => None,
         }
     }
 
-    /// Updates an attribute with a new parameter
     fn update_attribute(&mut self, value: (String, String)) {
-        if value.0 == "prefix" {
-            self.prefix = Some(parse_string(value.1.as_str()).expect("Not a rename attribute"));
-        } else if value.0 == "suffix" {
-            self.suffix = Some(parse_string(value.1.as_str()).expect("Not a rename attribute"));
-        } else if value.0 == "case" {
-            self.case = Some(Case::try_from(value).expect("Not a rename attribute"));
+        match value.0.as_str() {
+            "prefix" => self.prefix = parse_string(&value.1).ok(),
+            "suffix" => self.suffix = parse_string(&value.1).ok(),
+            "case" => self.case = Case::try_from(value).ok(),
+            _ => {}
         }
     }
 
-    fn rename(&self, s: &str) -> String {
-        let mut new_name = String::new();
+    /// Applies renaming rules (prefix, suffix, case) to a given string.
+    fn rename<'a>(&self, s: &'a str) -> Cow<'a, str> {
+        let mut new_name = Cow::Borrowed(s);
+
         if let Some(prefix) = &self.prefix {
-            new_name.push_str(prefix);
+            new_name = Cow::Owned(format!("{}{}", prefix, new_name));
         }
-
-        new_name.push_str(s);
-
         if let Some(suffix) = &self.suffix {
-            new_name.push_str(suffix);
+            new_name = Cow::Owned(format!("{}{}", new_name, suffix));
         }
-
         if let Some(case) = &self.case {
-            new_name = case.to_case(&new_name);
+            new_name = Cow::Owned(case.to_case(&new_name));
         }
-
         new_name
     }
 }
 
-/// Stores enum variants and their optional renaming attributes.
+/// Stores renaming information for enum variants.
 pub(crate) struct Variants {
     variant_renames: HashMap<Ident, Option<VariantRename>>,
 }
 
 impl Variants {
-    /// Parses an AST to extract enum variants and their attributes.
+    /// Constructs a `Variants` instance by parsing the derive input.
     pub(crate) fn new(ast: &DeriveInput) -> Self {
         let mut new = Self {
             variant_renames: HashMap::new(),
@@ -204,24 +183,20 @@ impl Variants {
         variants
             .iter()
             .for_each(|variant| new.parse_variant_attribute(variant));
-
         new
     }
 
-    /// Extracts renaming attributes from an enum variant.
+    /// Parses attributes for a given enum variant.
     fn parse_variant_attribute(&mut self, variant: &syn::Variant) {
-        let attribute_renames = variant.attrs.iter().filter_map(VariantRename::parse_args);
-
-        let rename = attribute_renames.last();
-
+        let rename = variant
+            .attrs
+            .iter()
+            .filter_map(VariantRename::parse_args)
+            .reduce(|_, new| new);
         self.variant_renames.insert(variant.ident.clone(), rename);
     }
 
     /// Applies renaming rules to each enum variant name.
-    ///
-    /// This method determines the final string representation of each variant
-    /// based on the `#[enum_stringify(...)]` attributes, including renaming,
-    /// prefix/suffix, and case transformation.
     pub(crate) fn apply(&self, attributes: &Attributes) -> Vec<(syn::Ident, String)> {
         self.variant_renames
             .iter()
@@ -229,10 +204,11 @@ impl Variants {
                 let new_name = if let Some(rename) = rename {
                     rename.0.clone()
                 } else {
-                    attributes.rename(ident.to_string().as_str())
+                    attributes.rename(ident.to_string().as_str()).into_owned()
                 };
                 (ident.clone(), new_name)
             })
             .collect()
     }
 }
+
