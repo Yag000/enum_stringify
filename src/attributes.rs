@@ -211,4 +211,3 @@ impl Variants {
             .collect()
     }
 }
-
