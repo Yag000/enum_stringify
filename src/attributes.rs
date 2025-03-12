@@ -19,7 +19,7 @@ static ATTRIBUTE_NAME: &str = "enum_stringify";
 fn parse_string(s: &str) -> Result<String, &'static str> {
     s.strip_prefix('"')
         .and_then(|s| s.strip_suffix('"'))
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .ok_or("String must be enclosed in double quotes")
 }
 
@@ -42,10 +42,10 @@ where
         let attribute_type = attribute_type.to_string();
 
         let Some(eq_token) = tokens.next() else {
-            return Err(format!("Expected '=' after '{}'", attribute_type));
+            return Err(format!("Expected '=' after '{attribute_type}'"));
         };
         if eq_token.to_string() != "=" {
-            return Err(format!("Unexpected token '{}', expected '='", eq_token));
+            return Err(format!("Unexpected token '{eq_token}', expected '='"));
         }
 
         let value = tokens.next().ok_or("Value must be specified")?.to_string();
@@ -151,10 +151,10 @@ impl Attributes {
         let mut new_name = Cow::Borrowed(s);
 
         if let Some(prefix) = &self.prefix {
-            new_name = Cow::Owned(format!("{}{}", prefix, new_name));
+            new_name = Cow::Owned(format!("{prefix}{new_name}"));
         }
         if let Some(suffix) = &self.suffix {
-            new_name = Cow::Owned(format!("{}{}", new_name, suffix));
+            new_name = Cow::Owned(format!("{new_name}{suffix}"));
         }
         if let Some(case) = &self.case {
             new_name = Cow::Owned(case.to_case(&new_name));
