@@ -175,16 +175,23 @@ pub fn enum_stringify(input: TokenStream) -> TokenStream {
     impl_enum_to_string(&ast)
 }
 
+/// Generates the implementation of `Display`, `FromStr`, `TryFrom<&str>`, and `TryFrom<String>`
+/// for the given enum.
 fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
+    // Extract attributes and variant information from the given AST.
     let attributes = Attributes::new(ast);
     let variants = Variants::new(ast);
 
-    let name = &ast.ident;
+    // Apply rename attributes to the enum variants.
     let pairs = variants.apply(&attributes);
+
+    // Extract the enum name.
+    let name = &ast.ident;
 
     let identifiers: Vec<&syn::Ident> = pairs.iter().map(|(i, _)| i).collect();
     let names: Vec<String> = pairs.iter().map(|(_, n)| n.clone()).collect();
 
+    // Generate implementations for each trait.
     let mut gen = impl_display(name, &identifiers, &names);
     gen.extend(impl_from_str(name, &identifiers, &names));
     gen.extend(impl_from_string(name));

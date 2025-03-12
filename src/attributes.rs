@@ -94,6 +94,7 @@ pub(crate) struct Attributes {
 }
 
 impl Attributes {
+    /// Constructs an `Attributes` instance by parsing derive attributes from an AST.
     pub(crate) fn new(ast: &DeriveInput) -> Self {
         let mut new = Self {
             case: None,
@@ -113,6 +114,7 @@ impl Attributes {
         new
     }
 
+    /// Parses attributes related to casing, prefixes, and suffixes.
     fn parse_args(attribute: &syn::Attribute) -> Option<Self> {
         if !attribute.path().is_ident(ATTRIBUTE_NAME) {
             return None;
@@ -144,6 +146,7 @@ impl Attributes {
         }
     }
 
+    /// Merges parsed attribute into the struct.
     fn merge_attribute(&mut self, attr: RenameAttribute) {
         match attr {
             RenameAttribute::Prefix(s) => self.prefix = Some(s),
@@ -152,6 +155,7 @@ impl Attributes {
         }
     }
 
+    /// Parses tokens into attributes.
     fn parse_token_list<T>(tokens: &TokenStream) -> Result<Vec<T>, String>
     where
         T: TryFrom<(String, String)>,
@@ -184,11 +188,13 @@ impl Attributes {
     }
 }
 
+/// Stores enum variants and their optional renaming attributes.
 pub(crate) struct Variants {
     variant_renames: HashMap<Ident, Option<VariantRename>>,
 }
 
 impl Variants {
+    /// Parses an AST to extract enum variants and their attributes.
     pub(crate) fn new(ast: &DeriveInput) -> Self {
         let mut new = Self {
             variant_renames: HashMap::new(),
@@ -206,6 +212,7 @@ impl Variants {
         new
     }
 
+    /// Extracts renaming attributes from an enum variant.
     fn parse_variant_attribute(&mut self, variant: &syn::Variant) {
         let attribute_renames = variant.attrs.iter().filter_map(VariantRename::parse_args);
 
@@ -214,6 +221,7 @@ impl Variants {
         self.variant_renames.insert(variant.ident.clone(), rename);
     }
 
+    /// Applies attributes (prefix, suffix, case) to enum variant names.
     pub(crate) fn apply(&self, attributes: &Attributes) -> Vec<(syn::Ident, String)> {
         let mut new_names = Vec::new();
 
