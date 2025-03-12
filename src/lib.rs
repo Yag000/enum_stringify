@@ -257,7 +257,11 @@ fn impl_display(name: &syn::Ident, identifiers: &[&syn::Ident], names: &[String]
 }
 
 /// Implementation of [`TryFrom<&str>`].
-fn impl_try_from_str(name: &syn::Ident, identifiers: &[&syn::Ident], names: &[String]) -> TokenStream {
+fn impl_try_from_str(
+    name: &syn::Ident,
+    identifiers: &[&syn::Ident],
+    names: &[String],
+) -> TokenStream {
     quote! {
         impl TryFrom<&str> for #name {
             type Error = String;
