@@ -186,6 +186,25 @@ impl Attributes {
         }
         Ok(result)
     }
+
+    fn rename(&self, s: &str) -> String {
+        let mut new_name = String::new();
+        if let Some(prefix) = &self.prefix {
+            new_name.push_str(prefix);
+        }
+
+        new_name.push_str(s);
+
+        if let Some(suffix) = &self.suffix {
+            new_name.push_str(suffix);
+        }
+
+        if let Some(case) = &self.case {
+            new_name = case.to_case(&new_name);
+        }
+
+        new_name
+    }
 }
 
 /// Stores enum variants and their optional renaming attributes.
@@ -230,22 +249,7 @@ impl Variants {
                 new_names.push(rename.0.clone());
                 continue;
             }
-            let mut new_name = String::new();
-            if let Some(prefix) = &attributes.prefix {
-                new_name.push_str(prefix);
-            }
-
-            new_name.push_str(&name.to_string());
-
-            if let Some(suffix) = &attributes.suffix {
-                new_name.push_str(suffix);
-            }
-
-            if let Some(case) = &attributes.case {
-                new_name = case.to_case(&new_name);
-            }
-
-            new_names.push(new_name);
+            new_names.push(attributes.rename(name.to_string().as_str()));
         }
 
         let tmp = self
