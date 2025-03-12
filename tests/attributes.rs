@@ -1,6 +1,7 @@
+use enum_stringify::EnumStringify;
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
+#[derive(Debug, PartialEq, EnumStringify)]
 #[enum_stringify(suffix = "Suff")]
 enum Number1 {
     Zero,
@@ -43,7 +44,7 @@ fn test_prefix_from_str() {
     assert_eq!(Number2::from_str("PrefTwo"), Ok(Number2::Two));
 }
 
-#[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
+#[derive(Debug, PartialEq, EnumStringify)]
 #[enum_stringify(prefix = "Pref", suffix = "Suff")]
 enum Number3 {
     Zero,
@@ -65,9 +66,25 @@ fn test_prefix_suffix_from_str() {
     assert_eq!(Number3::from_str("PrefTwoSuff"), Ok(Number3::Two));
 }
 
+#[derive(EnumStringify, Debug, PartialEq)]
+#[enum_stringify(prefix = "Pre", suffix = "Post")]
+enum Status {
+    Okk,
+    Error3,
+}
+
+#[test]
+fn test_prefix_suffix() {
+    assert_eq!(Status::Okk.to_string(), "PreOkkPost");
+    assert_eq!(Status::Error3.to_string(), "PreError3Post");
+
+    assert_eq!(Status::try_from("PreOkkPost").unwrap(), Status::Okk);
+    assert_eq!(Status::try_from("PreError3Post").unwrap(), Status::Error3);
+}
+
 // Testing commutativity of prefix, suffix and case
 
-#[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
+#[derive(Debug, PartialEq, EnumStringify)]
 #[enum_stringify(suffix = "Suff", prefix = "Pref", case = "flat")]
 enum Number4 {
     Zero,
@@ -89,7 +106,7 @@ fn test_suffix_prefix_flat_from_str() {
     assert_eq!(Number4::from_str("preftwosuff"), Ok(Number4::Two));
 }
 
-#[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
+#[derive(Debug, PartialEq, EnumStringify)]
 #[enum_stringify(suffix = "Suff", prefix = "Pref", case = "upper_flat")]
 enum Number5 {
     Zero,
@@ -111,7 +128,7 @@ fn test_suffix_prefix_upper_flat_from_str() {
     assert_eq!(Number5::from_str("PREFTWOSUFF"), Ok(Number5::Two));
 }
 
-#[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
+#[derive(Debug, PartialEq, EnumStringify)]
 #[enum_stringify(case = "lower")]
 enum Number6 {
     Zero,
@@ -133,7 +150,7 @@ fn test_lower_from_str() {
     assert_eq!(Number6::from_str("two"), Ok(Number6::Two));
 }
 
-#[derive(Debug, PartialEq, enum_stringify::EnumStringify)]
+#[derive(Debug, PartialEq, EnumStringify)]
 #[enum_stringify(case = "upper")]
 enum Number7 {
     Zero,
@@ -153,4 +170,45 @@ fn test_upper_from_str() {
     assert_eq!(Number7::from_str("ZERO"), Ok(Number7::Zero));
     assert_eq!(Number7::from_str("ONE"), Ok(Number7::One));
     assert_eq!(Number7::from_str("TWO"), Ok(Number7::Two));
+}
+
+#[derive(EnumStringify, Debug, PartialEq)]
+#[enum_stringify(prefix = "😀", suffix = "🥳")]
+enum UnicodeEnum {
+    Japanese,
+    Star,
+}
+
+#[test]
+fn test_unicode() {
+    assert_eq!(UnicodeEnum::Japanese.to_string(), "😀Japanese🥳");
+    assert_eq!(UnicodeEnum::Star.to_string(), "😀Star🥳");
+
+    assert_eq!(
+        UnicodeEnum::try_from("😀Japanese🥳").unwrap(),
+        UnicodeEnum::Japanese
+    );
+    assert_eq!(
+        UnicodeEnum::try_from("😀Star🥳").unwrap(),
+        UnicodeEnum::Star
+    );
+}
+
+#[derive(EnumStringify, Debug, PartialEq)]
+#[enum_stringify(prefix = "", suffix = "")]
+enum Punctuated {
+    Excited,
+    Happy,
+}
+
+#[test]
+fn test_empty_suffix_prefix() {
+    assert_eq!(Punctuated::Excited.to_string(), "Excited");
+    assert_eq!(Punctuated::Happy.to_string(), "Happy");
+
+    assert_eq!(
+        Punctuated::try_from("Excited").unwrap(),
+        Punctuated::Excited
+    );
+    assert_eq!(Punctuated::try_from("Happy").unwrap(), Punctuated::Happy);
 }
