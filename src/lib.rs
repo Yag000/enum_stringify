@@ -236,9 +236,9 @@ fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
 
     // Generate implementations for each trait
     let mut gen = impl_display(name, &identifiers, &names);
-    gen.extend(impl_from_str(name, &identifiers, &names));
-    gen.extend(impl_from_string(name));
-    gen.extend(impl_from_str_trait(name));
+    gen.extend(impl_try_from_str(name, &identifiers, &names));
+    gen.extend(impl_try_from_string(name));
+    gen.extend(impl_from_str(name));
     gen
 }
 
@@ -257,7 +257,7 @@ fn impl_display(name: &syn::Ident, identifiers: &[&syn::Ident], names: &[String]
 }
 
 /// Implementation of [`TryFrom<&str>`].
-fn impl_from_str(name: &syn::Ident, identifiers: &[&syn::Ident], names: &[String]) -> TokenStream {
+fn impl_try_from_str(name: &syn::Ident, identifiers: &[&syn::Ident], names: &[String]) -> TokenStream {
     quote! {
         impl TryFrom<&str> for #name {
             type Error = String;
@@ -274,7 +274,7 @@ fn impl_from_str(name: &syn::Ident, identifiers: &[&syn::Ident], names: &[String
 }
 
 /// Implementation of [`TryFrom<String>`].
-fn impl_from_string(name: &syn::Ident) -> TokenStream {
+fn impl_try_from_string(name: &syn::Ident) -> TokenStream {
     quote! {
         impl TryFrom<String> for #name {
             type Error = String;
@@ -288,7 +288,7 @@ fn impl_from_string(name: &syn::Ident) -> TokenStream {
 }
 
 /// Implementation of [`std::str::FromStr`].
-fn impl_from_str_trait(name: &syn::Ident) -> TokenStream {
+fn impl_from_str(name: &syn::Ident) -> TokenStream {
     quote! {
         impl ::std::str::FromStr for #name {
             type Err = String;
