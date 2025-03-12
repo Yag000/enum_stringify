@@ -17,7 +17,7 @@ fn parse_string(s: &str) -> Result<String, ()> {
 
 #[derive(Clone)]
 /// Represents a rename attribute applied to an enum variant.
-pub struct VariantRename(String);
+struct VariantRename(String);
 
 impl TryFrom<(String, String)> for VariantRename {
     type Error = ();
@@ -64,7 +64,7 @@ impl VariantRename {
 }
 
 // Represents different renaming attributes that can be applied to enum variants.
-pub enum RenameAttribute {
+enum RenameAttribute {
     Case(Case),
     Prefix(String),
     Suffix(String),
@@ -88,9 +88,9 @@ impl TryFrom<(String, String)> for RenameAttribute {
 
 #[derive(Default)]
 pub(crate) struct Attributes {
-    pub(crate) case: Option<Case>,
-    pub(crate) prefix: Option<String>,
-    pub(crate) suffix: Option<String>,
+    case: Option<Case>,
+    prefix: Option<String>,
+    suffix: Option<String>,
 }
 
 impl Attributes {
