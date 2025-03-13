@@ -6,6 +6,7 @@ use syn::{DeriveInput, Meta};
 
 static ATTRIBUTE_NAME: &str = "enum_stringify";
 
+/// Parses a string literal by removing surrounding quotes if present.
 fn parse_string(s: &str) -> Result<String, ()> {
     if s.starts_with('"') && s.ends_with('"') {
         Ok(s[1..s.len() - 1].to_string())
@@ -15,7 +16,8 @@ fn parse_string(s: &str) -> Result<String, ()> {
 }
 
 #[derive(Clone)]
-pub struct VariantRename(String);
+/// Represents a rename attribute applied to an enum variant.
+struct VariantRename(String);
 
 impl TryFrom<(String, String)> for VariantRename {
     type Error = ();
@@ -30,6 +32,7 @@ impl TryFrom<(String, String)> for VariantRename {
 }
 
 impl VariantRename {
+    /// Parses an attribute to determine if it is a rename directive.
     fn parse_args(attribute: &syn::Attribute) -> Option<Self> {
         if !attribute.path().is_ident(ATTRIBUTE_NAME) {
             return None;
@@ -60,13 +63,14 @@ impl VariantRename {
     }
 }
 
-pub enum Attribute {
+// Represents different renaming attributes that can be applied to enum variants.
+enum RenameAttribute {
     Case(Case),
     Prefix(String),
     Suffix(String),
 }
 
-impl TryFrom<(String, String)> for Attribute {
+impl TryFrom<(String, String)> for RenameAttribute {
     type Error = ();
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
@@ -84,12 +88,13 @@ impl TryFrom<(String, String)> for Attribute {
 
 #[derive(Default)]
 pub(crate) struct Attributes {
-    pub(crate) case: Option<Case>,
-    pub(crate) prefix: Option<String>,
-    pub(crate) suffix: Option<String>,
+    case: Option<Case>,
+    prefix: Option<String>,
+    suffix: Option<String>,
 }
 
 impl Attributes {
+    /// Constructs an `Attributes` instance by parsing derive attributes from an AST.
     pub(crate) fn new(ast: &DeriveInput) -> Self {
         let mut new = Self {
             case: None,
@@ -109,6 +114,7 @@ impl Attributes {
         new
     }
 
+    /// Parses attributes related to casing, prefixes, and suffixes.
     fn parse_args(attribute: &syn::Attribute) -> Option<Self> {
         if !attribute.path().is_ident(ATTRIBUTE_NAME) {
             return None;
@@ -127,7 +133,7 @@ impl Attributes {
 
                 if path == vec![ATTRIBUTE_NAME] {
                     let attributes =
-                        Attributes::parse_token_list::<Attribute>(&list.tokens).ok()?;
+                        Attributes::parse_token_list::<RenameAttribute>(&list.tokens).ok()?;
                     for attr in attributes {
                         new.merge_attribute(attr);
                     }
@@ -140,14 +146,16 @@ impl Attributes {
         }
     }
 
-    fn merge_attribute(&mut self, attr: Attribute) {
+    /// Merges parsed attribute into the struct.
+    fn merge_attribute(&mut self, attr: RenameAttribute) {
         match attr {
-            Attribute::Prefix(s) => self.prefix = Some(s),
-            Attribute::Suffix(s) => self.suffix = Some(s),
-            Attribute::Case(s) => self.case = Some(s),
+            RenameAttribute::Prefix(s) => self.prefix = Some(s),
+            RenameAttribute::Suffix(s) => self.suffix = Some(s),
+            RenameAttribute::Case(s) => self.case = Some(s),
         }
     }
 
+    /// Parses tokens into attributes.
     fn parse_token_list<T>(tokens: &TokenStream) -> Result<Vec<T>, String>
     where
         T: TryFrom<(String, String)>,
@@ -180,11 +188,13 @@ impl Attributes {
     }
 }
 
+/// Stores enum variants and their optional renaming attributes.
 pub(crate) struct Variants {
     variant_renames: HashMap<Ident, Option<VariantRename>>,
 }
 
 impl Variants {
+    /// Parses an AST to extract enum variants and their attributes.
     pub(crate) fn new(ast: &DeriveInput) -> Self {
         let mut new = Self {
             variant_renames: HashMap::new(),
@@ -202,6 +212,7 @@ impl Variants {
         new
     }
 
+    /// Extracts renaming attributes from an enum variant.
     fn parse_variant_attribute(&mut self, variant: &syn::Variant) {
         let attribute_renames = variant.attrs.iter().filter_map(VariantRename::parse_args);
 
@@ -210,6 +221,7 @@ impl Variants {
         self.variant_renames.insert(variant.ident.clone(), rename);
     }
 
+    /// Applies attributes (prefix, suffix, case) to enum variant names.
     pub(crate) fn apply(&self, attributes: &Attributes) -> Vec<(syn::Ident, String)> {
         let mut new_names = Vec::new();
 
