@@ -5,20 +5,20 @@ pub(crate) struct Case(convert_case::Case);
 
 // This is used to check if the first string is "case" and then attempt conversion of the second string.
 impl TryFrom<(String, String)> for Case {
-    type Error = ();
+    type Error = &'static str;
 
     fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
         if value.0 == "case" {
             value.1.try_into()
         } else {
-            Err(())
+            Err("The first string is not \"case\"")
         }
     }
 }
 
 // Maps specific string values to their corresponding `convert_case::Case` variant.
 impl TryFrom<String> for Case {
-    type Error = ();
+    type Error = &'static str;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Ok(Self(match value.as_str() {
@@ -39,7 +39,7 @@ impl TryFrom<String> for Case {
             "\"flat\"" => convert_case::Case::Flat,
             "\"upper_flat\"" => convert_case::Case::UpperFlat,
             "\"alternating\"" => convert_case::Case::Alternating,
-            _ => Err(())?,
+            _ => Err("Invalid case")?,
         }))
     }
 }
