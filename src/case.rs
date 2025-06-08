@@ -1,6 +1,9 @@
+use std::fmt::Display;
+
 use convert_case::Casing;
 
 /// Wrapper struct around `convert_case::Case` to represent different casing styles.
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Case(convert_case::Case);
 
 // This is used to check if the first string is "case" and then attempt conversion of the second string.
@@ -41,6 +44,31 @@ impl TryFrom<String> for Case {
             "\"alternating\"" => convert_case::Case::Alternating,
             _ => Err("Invalid case")?,
         }))
+    }
+}
+
+impl Display for Case {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let v = match self.0 {
+            convert_case::Case::Upper => "upper".to_string(),
+            convert_case::Case::Lower => "lower".to_string(),
+            convert_case::Case::Title => "title".to_string(),
+            convert_case::Case::Toggle => "toggle".to_string(),
+            convert_case::Case::Camel => "camel".to_string(),
+            convert_case::Case::Pascal => "pascal".to_string(),
+            convert_case::Case::UpperCamel => "upper_camel".to_string(),
+            convert_case::Case::Snake => "snake".to_string(),
+            convert_case::Case::UpperSnake => "upper_snake".to_string(),
+            convert_case::Case::ScreamingSnake => "screaming_snake".to_string(),
+            convert_case::Case::Kebab => "kebab".to_string(),
+            convert_case::Case::Cobol => "cobol".to_string(),
+            convert_case::Case::UpperKebab => "upper_kebab".to_string(),
+            convert_case::Case::Train => "train".to_string(),
+            convert_case::Case::Flat => "flat".to_string(),
+            convert_case::Case::UpperFlat => "upper_flat".to_string(),
+            convert_case::Case::Alternating => "alternating".to_string(),
+        };
+        write!(f, "{v}")
     }
 }
 

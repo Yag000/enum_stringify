@@ -65,7 +65,7 @@ where
 }
 
 /// Represents a rename attribute for an enum variant.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 struct VariantRename(String);
 
 impl TryFrom<(String, String)> for VariantRename {
@@ -98,7 +98,7 @@ impl VariantRename {
 }
 
 /// Represents attribute configurations for renaming enum variants.
-#[derive(Default)]
+#[derive(Default, Debug, PartialEq)]
 pub(crate) struct Attributes {
     case: Option<Case>,
     prefix: Option<String>,
@@ -209,5 +209,207 @@ impl Variants {
                 (ident.clone(), new_name)
             })
             .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use quote::quote;
+
+    use super::*;
+
+    #[test]
+    fn test_parse_string() {
+        assert_eq!(parse_string("\"hello\""), Ok("hello".to_string()));
+        assert_eq!(
+            parse_string("hello"),
+            Err("String must be enclosed in double quotes")
+        );
+
+        assert_eq!(
+            parse_string("\"hello"),
+            Err("String must be enclosed in double quotes")
+        );
+        assert_eq!(
+            parse_string("hello\""),
+            Err("String must be enclosed in double quotes")
+        );
+        assert_eq!(parse_string("\"he\"llo\""), Ok("he\"llo".to_string()));
+
+        assert_eq!(parse_string("\"\""), Ok("".to_string()));
+        assert_eq!(parse_string("\"\"\""), Ok("\"".to_string()));
+    }
+
+    fn assert_parse_token_list<T>(tokens: TokenStream, expected: Vec<T>)
+    where
+        T: TryFrom<(String, String)> + PartialEq + std::fmt::Debug,
+    {
+        let result = parse_token_list::<T>(&tokens).unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_parse_token_list_string_string() {
+        assert_parse_token_list::<(String, String)>(quote! {}, vec![]);
+
+        assert_parse_token_list::<(String, String)>(
+            quote! { rename = "hello" },
+            vec![("rename".to_string(), "\"hello\"".to_string())],
+        );
+
+        assert_parse_token_list(
+            quote! { rename = "hello", rename = "world" },
+            vec![
+                ("rename".to_string(), "\"hello\"".to_string()),
+                ("rename".to_string(), "\"world\"".to_string()),
+            ],
+        );
+    }
+
+    #[derive(Debug, PartialEq)]
+    struct TestStruct(String);
+
+    impl TryFrom<(String, String)> for TestStruct {
+        type Error = &'static str;
+
+        fn try_from(value: (String, String)) -> Result<Self, Self::Error> {
+            Ok(Self(parse_string(value.1.as_str())?))
+        }
+    }
+
+    #[test]
+    fn test_parse_token_list_struct() {
+        assert_parse_token_list::<TestStruct>(
+            quote! { rename = "hello" },
+            vec![TestStruct("hello".to_string())],
+        );
+
+        assert_parse_token_list::<TestStruct>(
+            quote! { rename = "hello", rename = "world" },
+            vec![
+                TestStruct("hello".to_string()),
+                TestStruct("world".to_string()),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_variant_rename_try_from() {
+        assert_eq!(
+            VariantRename::try_from(("rename".to_string(), "\"hello\"".to_string())),
+            Ok(VariantRename("hello".to_string()))
+        );
+
+        assert_eq!(
+            VariantRename::try_from(("rename".to_string(), "hello".to_string())),
+            Err("String must be enclosed in double quotes")
+        );
+
+        assert_eq!(
+            VariantRename::try_from(("not_rename".to_string(), "\"hello\"".to_string())),
+            Err("Not a rename string")
+        );
+    }
+
+    #[test]
+    fn test_parse_token_list_variant_rename() {
+        assert_parse_token_list::<VariantRename>(
+            quote! { rename = "hello" },
+            vec![VariantRename("hello".to_string())],
+        );
+
+        assert_parse_token_list::<VariantRename>(
+            quote! { rename = "hello", rename = "world" },
+            vec![
+                VariantRename("hello".to_string()),
+                VariantRename("world".to_string()),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_attributes_parse_args() {
+        let attribute =
+            syn::parse_quote! { #[enum_stringify(prefix = "pre", suffix = "suf", case = "snake")] };
+        let attributes = Attributes::parse_args(&attribute).unwrap();
+        assert_eq!(attributes.prefix, Some("pre".to_string()));
+        assert_eq!(attributes.suffix, Some("suf".to_string()));
+        assert_eq!(
+            attributes.case.map(|a| a.to_string()),
+            Some("snake".to_string())
+        );
+
+        let attribute = syn::parse_quote! { #[enum_stringify(prefix = "pre", suffix = "suf")] };
+        let attributes = Attributes::parse_args(&attribute).unwrap();
+        assert_eq!(attributes.prefix, Some("pre".to_string()));
+        assert_eq!(attributes.suffix, Some("suf".to_string()));
+        assert_eq!(attributes.case, None);
+
+        let attribute = syn::parse_quote! { #[enum_stringify(case = "snake")] };
+        let attributes = Attributes::parse_args(&attribute).unwrap();
+        assert_eq!(attributes.prefix, None);
+        assert_eq!(attributes.suffix, None);
+        assert_eq!(
+            attributes.case.map(|a| a.to_string()),
+            Some("snake".to_string())
+        );
+
+        let attribute = syn::parse_quote! { #[enum_stringify] };
+        assert_eq!(Attributes::parse_args(&attribute), None);
+    }
+
+    #[test]
+    fn test_attributes_update_attribute() {
+        let mut attributes = Attributes::default();
+        attributes.update_attribute(("prefix".to_string(), "\"pre\"".to_string()));
+        assert_eq!(attributes.prefix, Some("pre".to_string()));
+
+        attributes.update_attribute(("suffix".to_string(), "\"suf\"".to_string()));
+        assert_eq!(attributes.suffix, Some("suf".to_string()));
+
+        attributes.update_attribute(("case".to_string(), "\"snake\"".to_string()));
+        assert_eq!(
+            attributes.case.clone().map(|a| a.to_string()),
+            Some("snake".to_string())
+        );
+
+        attributes.update_attribute(("invalid".to_string(), "\"value\"".to_string()));
+        assert_eq!(attributes.prefix, Some("pre".to_string()));
+        assert_eq!(attributes.suffix, Some("suf".to_string()));
+        assert_eq!(
+            attributes.case.clone().map(|a| a.to_string()),
+            Some("snake".to_string())
+        );
+
+        attributes.update_attribute(("prefix".to_string(), "\"new1\"".to_string()));
+        assert_eq!(attributes.prefix, Some("new1".to_string()));
+
+        attributes.update_attribute(("suffix".to_string(), "\"new2\"".to_string()));
+        assert_eq!(attributes.suffix, Some("new2".to_string()));
+
+        attributes.update_attribute(("case".to_string(), "\"upper\"".to_string()));
+        assert_eq!(
+            attributes.case.clone().map(|a| a.to_string()),
+            Some("upper".to_string())
+        );
+    }
+
+    #[test]
+    fn test_attributes_rename() {
+        let mut attributes = Attributes {
+            prefix: Some("pre".to_string()),
+            suffix: Some("suf".to_string()),
+            case: None,
+        };
+
+        assert_eq!(attributes.rename("name"), "prenamesuf");
+        assert_eq!(attributes.rename("Name"), "preNamesuf");
+        assert_eq!(attributes.rename("NAME"), "preNAMEsuf");
+
+        attributes.update_attribute(("case".to_string(), "\"upper_flat\"".to_string()));
+
+        assert_eq!(attributes.rename("name"), "PRENAMESUF");
+        assert_eq!(attributes.rename("Name"), "PRENAMESUF");
+        assert_eq!(attributes.rename("NAME"), "PRENAMESUF");
     }
 }
