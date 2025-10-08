@@ -98,8 +98,8 @@ impl VariantRename {
 }
 
 /// Represents attribute configurations for renaming enum variants.
-#[derive(Default, Debug, PartialEq)]
-pub(crate) struct Attributes {
+#[derive(Default, Debug, PartialEq, Eq)]
+pub struct Attributes {
     case: Option<Case>,
     prefix: Option<String>,
     suffix: Option<String>,
@@ -164,7 +164,7 @@ impl Attributes {
 }
 
 /// Stores renaming information for enum variants.
-pub(crate) struct Variants {
+pub struct Variants {
     variant_renames: HashMap<Ident, Option<VariantRename>>,
 }
 
@@ -236,7 +236,7 @@ mod tests {
         );
         assert_eq!(parse_string("\"he\"llo\""), Ok("he\"llo".to_string()));
 
-        assert_eq!(parse_string("\"\""), Ok("".to_string()));
+        assert_eq!(parse_string("\"\""), Ok(String::new()));
         assert_eq!(parse_string("\"\"\""), Ok("\"".to_string()));
     }
 

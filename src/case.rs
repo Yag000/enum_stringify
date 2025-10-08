@@ -3,8 +3,8 @@ use std::fmt::Display;
 use convert_case::Casing;
 
 /// Wrapper struct around `convert_case::Case` to represent different casing styles.
-#[derive(Debug, PartialEq, Clone)]
-pub(crate) struct Case(convert_case::Case);
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Case(convert_case::Case);
 
 // This is used to check if the first string is "case" and then attempt conversion of the second string.
 impl TryFrom<(String, String)> for Case {
