@@ -2,8 +2,8 @@
 name = "enum_stringify"
 version = "0.6.4"
 edition = "2021"
-description="Macro to generate string conversion functions for enums"
-authors = ["Yago Iglesias Vazquez  <yago.iglesias.vazquez@gmail.com>"]
+description = "Macro to generate string conversion functions for enums"
+authors = ["Yago Iglesias Vazquez  <yago@yagoiglesias.fr>"]
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/Yag000/enum_stringify"
