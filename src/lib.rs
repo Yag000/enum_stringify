@@ -226,11 +226,14 @@ fn impl_enum_to_string(ast: &syn::DeriveInput) -> TokenStream {
     let variants = Variants::new(ast);
 
     // Apply rename attributes to the enum variants.
+    // We get the identifier of the variant of the enum and its
+    // new name (based on the attribute information)
     let pairs = variants.apply(&attributes);
 
     // Extract the enum name.
     let name = &ast.ident;
 
+    // Unzip for easier handling
     let identifiers: Vec<&syn::Ident> = pairs.iter().map(|(i, _)| i).collect();
     let names: Vec<String> = pairs.iter().map(|(_, n)| n.clone()).collect();
 
