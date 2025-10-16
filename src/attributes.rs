@@ -163,7 +163,7 @@ impl Attributes {
     }
 }
 
-/// Stores the names of the variants of an enum with the possibility of adding 
+/// Stores the names of the variants of an enum with the possibility of adding
 /// renaming information
 pub struct Variants {
     variant_renames: HashMap<Ident, Option<VariantRename>>,
