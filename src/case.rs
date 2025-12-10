@@ -78,3 +78,133 @@ impl Case {
         s.to_case(self.0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use convert_case::Case as CC;
+
+    /// Helper to wrap a convert_case::Case into our Case type.
+    fn wrap(c: CC) -> Case {
+        Case(c)
+    }
+
+    /// List of all supported case strings and their expected enum variants.
+    fn all_cases() -> Vec<(&'static str, CC)> {
+        vec![
+            ("\"upper\"", CC::Upper),
+            ("\"lower\"", CC::Lower),
+            ("\"title\"", CC::Title),
+            ("\"toggle\"", CC::Toggle),
+            ("\"camel\"", CC::Camel),
+            ("\"pascal\"", CC::Pascal),
+            ("\"upper_camel\"", CC::UpperCamel),
+            ("\"snake\"", CC::Snake),
+            ("\"upper_snake\"", CC::UpperSnake),
+            ("\"screaming_snake\"", CC::ScreamingSnake),
+            ("\"kebab\"", CC::Kebab),
+            ("\"cobol\"", CC::Cobol),
+            ("\"upper_kebab\"", CC::UpperKebab),
+            ("\"train\"", CC::Train),
+            ("\"flat\"", CC::Flat),
+            ("\"upper_flat\"", CC::UpperFlat),
+            ("\"alternating\"", CC::Alternating),
+        ]
+    }
+
+    // ------------------------------------------------------------------------
+    // Parsing Tests
+    // ------------------------------------------------------------------------
+
+    #[test]
+    fn test_try_from_string_parses_all_cases() {
+        for (input, expected_variant) in all_cases() {
+            let parsed: Case = input.to_string().try_into().unwrap();
+            assert_eq!(
+                parsed,
+                wrap(expected_variant),
+                "Parsing string {input} should yield {expected_variant:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_try_from_string_rejects_invalid_input() {
+        let err = Case::try_from("invalid_value".to_string());
+        assert!(err.is_err());
+    }
+
+    #[test]
+    fn test_try_from_tuple_parses_when_first_value_is_case() {
+        let (key, val) = ("case".to_string(), "\"upper\"".to_string());
+        let result: Result<Case, _> = (key, val).try_into();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_try_from_tuple_rejects_when_first_value_is_not_case() {
+        let (key, val) = ("not_case".to_string(), "\"upper\"".to_string());
+        let result: Result<Case, _> = (key, val).try_into();
+        assert!(result.is_err());
+    }
+
+    // ------------------------------------------------------------------------
+    // Display Tests
+    // ------------------------------------------------------------------------
+
+    #[test]
+    fn test_display_outputs_all_expected_strings() {
+        for (input_literal, variant) in all_cases() {
+            let c = wrap(variant);
+            let expected_display = input_literal.trim_matches('"');
+            assert_eq!(
+                c.to_string(),
+                expected_display,
+                "Display for {:?} should be `{}`",
+                variant,
+                expected_display
+            );
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // to_case() Behavior Documentation Tests
+    // ------------------------------------------------------------------------
+
+    #[test]
+    fn test_to_case_produces_expected_conversions() {
+        let example = "hello world";
+
+        let examples = vec![
+            (CC::Upper, "HELLO WORLD"),
+            (CC::Lower, "hello world"),
+            (CC::Title, "Hello World"),
+            (CC::Toggle, "hELLO wORLD"),
+            (CC::Camel, "helloWorld"),
+            (CC::Pascal, "HelloWorld"),
+            (CC::UpperCamel, "HelloWorld"),
+            (CC::Snake, "hello_world"),
+            (CC::UpperSnake, "HELLO_WORLD"),
+            (CC::ScreamingSnake, "HELLO_WORLD"),
+            (CC::Kebab, "hello-world"),
+            (CC::Cobol, "HELLO-WORLD"),
+            (CC::UpperKebab, "HELLO-WORLD"),
+            (CC::Train, "Hello-World"),
+            (CC::Flat, "helloworld"),
+            (CC::UpperFlat, "HELLOWORLD"),
+            (CC::Alternating, "hElLo WoRlD"),
+        ];
+
+        for (variant, expected_output) in examples {
+            let c = Case(variant);
+            assert_eq!(
+                c.to_case(example),
+                expected_output,
+                "Case {:?} should convert `{}` to `{}`",
+                variant,
+                example,
+                expected_output
+            );
+        }
+    }
+}
