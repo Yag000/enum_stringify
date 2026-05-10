@@ -178,7 +178,7 @@
 //! impl TryFrom<&str> for Numbers {
 //!     type Error = String;
 //!
-//!     fn try_from(s: &str) -> Result<Self, Self::Error> {
+//!     fn try_from(s: &str) -> std::result::Result<Self, Self::Error> {
 //!         match s {
 //!             "One" => Ok(Self::One),
 //!             "Two" => Ok(Self::Two),
@@ -190,7 +190,7 @@
 //! impl TryFrom<String> for Numbers {
 //!     type Error = String;
 //!
-//!     fn try_from(s: String) -> Result<Self, Self::Error> {
+//!     fn try_from(s: String) -> std::result::Result<Self, Self::Error> {
 //!         s.as_str().try_into()
 //!     }
 //! }
@@ -198,7 +198,7 @@
 //! impl ::std::str::FromStr for Numbers {
 //!     type Err = String;
 //!
-//!     fn from_str(s: &str) -> Result<Self, Self::Err> {
+//!     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
 //!         s.try_into()
 //!     }
 //! }
@@ -269,7 +269,7 @@ fn impl_try_from_str(
         impl TryFrom<&str> for #name {
             type Error = String;
 
-            fn try_from(s: &str) -> Result<Self, Self::Error> {
+            fn try_from(s: &str) -> std::result::Result<Self, Self::Error> {
                 match s {
                     #(#names => Ok(Self::#identifiers),)*
                     _ => Err(format!("Failed to parse string '{}' for enum {}", s, stringify!(#name))),
@@ -286,7 +286,7 @@ fn impl_try_from_string(name: &syn::Ident) -> TokenStream {
         impl TryFrom<String> for #name {
             type Error = String;
 
-            fn try_from(s: String) -> Result<Self, Self::Error> {
+            fn try_from(s: String) -> std::result::Result<Self, Self::Error> {
                 s.as_str().try_into()
             }
         }
@@ -300,7 +300,7 @@ fn impl_from_str(name: &syn::Ident) -> TokenStream {
         impl ::std::str::FromStr for #name {
             type Err = String;
 
-            fn from_str(s: &str) -> Result<Self, Self::Err> {
+            fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
                 s.try_into()
             }
         }
